@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 
 require "net/http"
@@ -14,9 +15,9 @@ module Mpp
 
         # Make a JSON-RPC call.
         def call(rpc_url, method, params, client: nil)
-          payload = { "jsonrpc" => "2.0", "method" => method, "params" => params, "id" => 1 }
+          payload = {"jsonrpc" => "2.0", "method" => method, "params" => params, "id" => 1}
 
-          uri = URI(rpc_url)
+          uri = Kernel.URI.new(rpc_url)
           http = client || Net::HTTP.new(uri.host, uri.port)
           http.use_ssl = uri.scheme == "https" unless client
           http.read_timeout = DEFAULT_TIMEOUT unless client
@@ -28,7 +29,7 @@ module Mpp
           response = http.request(request)
           result = JSON.parse(response.body)
 
-          raise "RPC error: #{result["error"]}" if result.key?("error")
+          Kernel.raise "RPC error: #{result["error"]}" if result.key?("error")
 
           result["result"]
         end
@@ -48,7 +49,7 @@ module Mpp
           result = call(
             rpc_url,
             "eth_estimateGas",
-            [{ "from" => from_addr, "to" => to, "data" => data }, "latest"],
+            [{"from" => from_addr, "to" => to, "data" => data}, "latest"],
             client: client
           )
           result.to_i(16)

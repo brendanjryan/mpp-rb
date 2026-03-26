@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 
 require "base64"
@@ -8,9 +9,9 @@ module Mpp
   module Extensions
     module MCP
       MCPChallenge = Data.define(:id, :realm, :method, :intent, :request,
-                                 :expires, :description, :digest, :opaque) do
+        :expires, :description, :digest, :opaque) do
         def initialize(id:, realm:, method:, intent:, request:,
-                       expires: nil, description: nil, digest: nil, opaque: nil)
+          expires: nil, description: nil, digest: nil, opaque: nil)
           super
         end
 
@@ -84,7 +85,7 @@ module Mpp
         end
 
         def to_meta
-          { META_CREDENTIAL => to_dict }
+          {META_CREDENTIAL => to_dict}
         end
 
         def self.from_dict(data)
@@ -138,9 +139,9 @@ module Mpp
       end
 
       MCPReceipt = Data.define(:status, :challenge_id, :method, :timestamp,
-                               :reference, :settlement) do
+        :reference, :settlement) do
         def initialize(status:, challenge_id:, method:, timestamp:,
-                       reference: nil, settlement: nil)
+          reference: nil, settlement: nil)
           super
         end
 
@@ -157,7 +158,7 @@ module Mpp
         end
 
         def to_meta
-          { META_RECEIPT => to_dict }
+          {META_RECEIPT => to_dict}
         end
 
         def self.from_dict(data)

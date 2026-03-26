@@ -16,7 +16,7 @@ class TestBodyDigest < Minitest::Test
   end
 
   def test_compute_dict
-    result = Mpp::BodyDigest.compute({ "key" => "value" })
+    result = Mpp::BodyDigest.compute({"key" => "value"})
 
     assert result.start_with?("sha-256=")
   end
@@ -35,15 +35,15 @@ class TestBodyDigest < Minitest::Test
   end
 
   def test_verify_dict_roundtrip
-    body = { "amount" => "1000", "currency" => "USD" }
+    body = {"amount" => "1000", "currency" => "USD"}
     digest = Mpp::BodyDigest.compute(body)
 
     assert Mpp::BodyDigest.verify(digest, body)
   end
 
   def test_deterministic_dict_encoding
-    d1 = Mpp::BodyDigest.compute({ "b" => "2", "a" => "1" })
-    d2 = Mpp::BodyDigest.compute({ "a" => "1", "b" => "2" })
+    d1 = Mpp::BodyDigest.compute({"b" => "2", "a" => "1"})
+    d2 = Mpp::BodyDigest.compute({"a" => "1", "b" => "2"})
 
     assert_equal d1, d2
   end

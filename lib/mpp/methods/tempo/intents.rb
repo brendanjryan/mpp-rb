@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 
 require "time"
@@ -44,7 +45,7 @@ module Mpp
           payload_data = credential.payload
           unless payload_data.is_a?(Hash) && payload_data.key?("type")
             raise Mpp::VerificationError,
-                  "Invalid credential payload"
+              "Invalid credential payload"
           end
 
           case payload_data["type"]
@@ -73,7 +74,7 @@ module Mpp
           if @store
             store_key = "mpp:charge:#{payload.hash.downcase}"
             raise Mpp::VerificationError, "Transaction hash already used" unless @store.put_if_absent(store_key,
-                                                                                                      payload.hash)
+              payload.hash)
           end
 
           rpc_url = get_rpc_url
@@ -85,7 +86,7 @@ module Mpp
             result, request
           )
             raise Mpp::VerificationError,
-                  "Transaction must contain a Transfer log matching request parameters"
+              "Transaction must contain a Transfer log matching request parameters"
           end
 
           Mpp::Receipt.success(payload.hash)
@@ -112,7 +113,7 @@ module Mpp
           tx_hash = Rpc.call(rpc_url, "eth_sendRawTransaction", [raw_tx])
           raise Mpp::VerificationError, "No transaction hash returned" unless tx_hash
 
-          receipt_data = nil
+          receipt_data = T.let(nil, T.untyped)
           MAX_RECEIPT_RETRY_ATTEMPTS.times do |attempt|
             receipt_data = Rpc.call(rpc_url, "eth_getTransactionReceipt", [tx_hash])
             break if receipt_data
@@ -126,7 +127,7 @@ module Mpp
             receipt_data, request
           )
             raise Mpp::VerificationError,
-                  "Transaction must contain a Transfer log matching request parameters"
+              "Transaction must contain a Transfer log matching request parameters"
           end
 
           Mpp::Receipt.success(tx_hash)
@@ -191,7 +192,7 @@ module Mpp
 
           begin
             decoded = RLP.decode(tx_bytes[1..])
-          rescue StandardError
+          rescue
             return
           end
 

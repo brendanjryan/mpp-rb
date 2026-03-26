@@ -1,3 +1,4 @@
+# typed: strict
 # frozen_string_literal: true
 
 require "openssl"
@@ -6,10 +7,13 @@ require "json"
 
 module Mpp
   module BodyDigest
+    extend T::Sig
+
     module_function
 
     # Compute a SHA-256 digest of a request body.
     # Returns: "sha-256=<base64>"
+    sig { params(body: T.untyped).returns(String) }
     def compute(body)
       case body
       when Hash
@@ -24,6 +28,7 @@ module Mpp
     end
 
     # Verify a body digest matches the expected value.
+    sig { params(digest: String, body: T.untyped).returns(T::Boolean) }
     def verify(digest, body)
       expected = compute(body)
       Mpp.secure_compare(expected, digest)

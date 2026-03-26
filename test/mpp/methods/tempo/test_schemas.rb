@@ -21,7 +21,7 @@ class TestSchemas < Minitest::Test
       "amount" => "1000000",
       "currency" => "0x20c0000000000000000000000000000000000000",
       "recipient" => "0x1234567890abcdef1234567890abcdef12345678",
-      "methodDetails" => { "chainId" => 42_431, "feePayer" => true }
+      "methodDetails" => {"chainId" => 42_431, "feePayer" => true}
     )
 
     assert_equal 42_431, request.method_details.chain_id

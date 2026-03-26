@@ -8,9 +8,9 @@ group :development, :test do
   gem "minitest", "~> 5.25"
   gem "minitest-reporters", "~> 1.7"
   gem "rake", "~> 13.0"
-  gem "rubocop", "~> 1.69"
-  gem "rubocop-minitest", "~> 0.36"
-  gem "rubocop-performance", "~> 1.23"
+  gem "standard", "~> 1.44"
+  gem "sorbet-static-and-runtime"
+  gem "tapioca", require: false
   gem "webmock", "~> 3.24"
 end
 

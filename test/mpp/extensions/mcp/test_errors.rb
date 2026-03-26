@@ -6,7 +6,7 @@ class TestMCPErrors < Minitest::Test
   def test_payment_required_error
     challenge = Mpp::Extensions::MCP::MCPChallenge.new(
       id: "ch_abc", realm: "api.example.com", method: "tempo",
-      intent: "charge", request: { "amount" => "1000" }
+      intent: "charge", request: {"amount" => "1000"}
     )
     error = Mpp::Extensions::MCP::PaymentRequiredError.new(challenges: [challenge])
 
@@ -25,7 +25,7 @@ class TestMCPErrors < Minitest::Test
   def test_payment_verification_error
     challenge = Mpp::Extensions::MCP::MCPChallenge.new(
       id: "ch_abc", realm: "api.example.com", method: "tempo",
-      intent: "charge", request: { "amount" => "1000" }
+      intent: "charge", request: {"amount" => "1000"}
     )
     error = Mpp::Extensions::MCP::PaymentVerificationError.new(
       challenges: [challenge],

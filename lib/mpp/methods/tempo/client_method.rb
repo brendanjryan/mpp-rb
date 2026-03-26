@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 
 require_relative "defaults"
@@ -15,12 +16,12 @@ module Mpp
       # Handles client-side credential creation for Tempo payments.
       class TempoMethod
         attr_reader :name, :account, :fee_payer, :root_account, :rpc_url,
-                    :chain_id, :currency, :recipient, :decimals, :client_id
+          :chain_id, :currency, :recipient, :decimals, :client_id
         attr_accessor :intents
 
         def initialize(account: nil, fee_payer: nil, root_account: nil,
-                       rpc_url: Defaults::RPC_URL, chain_id: nil, currency: nil,
-                       recipient: nil, decimals: 6, client_id: nil)
+          rpc_url: Defaults::RPC_URL, chain_id: nil, currency: nil,
+          recipient: nil, decimals: 6, client_id: nil)
           @name = "tempo"
           @account = account
           @fee_payer = fee_payer
@@ -84,7 +85,7 @@ module Mpp
 
           Mpp::Credential.new(
             challenge: challenge.to_echo,
-            payload: { "type" => "transaction", "signature" => raw_tx },
+            payload: {"type" => "transaction", "signature" => raw_tx},
             source: "did:pkh:eip155:#{chain_id}:#{@account.address}"
           )
         end
@@ -97,23 +98,23 @@ module Mpp
         private
 
         def build_tempo_transfer(amount:, currency:, recipient:, nonce_key: 0,
-                                 memo: nil, rpc_url: nil, expected_chain_id: nil,
-                                 awaiting_fee_payer: false)
+          memo: nil, rpc_url: nil, expected_chain_id: nil,
+          awaiting_fee_payer: false)
           raise ArgumentError, "No account configured" unless @account
 
           resolved_rpc = rpc_url || @rpc_url
 
           transfer_data = if memo
-                            encode_transfer_with_memo(recipient, Integer(amount), memo)
-                          else
-                            encode_transfer(recipient, Integer(amount))
-                          end
+            encode_transfer_with_memo(recipient, Integer(amount), memo)
+          else
+            encode_transfer(recipient, Integer(amount))
+          end
 
           chain_id, on_chain_nonce, gas_price = Rpc.get_tx_params(resolved_rpc, @account.address)
 
           if expected_chain_id && chain_id != expected_chain_id
             raise TransactionError,
-                  "Chain ID mismatch: RPC returned #{chain_id}, expected #{expected_chain_id} from challenge"
+              "Chain ID mismatch: RPC returned #{chain_id}, expected #{expected_chain_id} from challenge"
           end
 
           if awaiting_fee_payer
@@ -130,7 +131,7 @@ module Mpp
           begin
             estimated = Rpc.estimate_gas(resolved_rpc, @account.address, currency, transfer_data)
             gas_limit = [gas_limit, estimated + 5_000].max
-          rescue StandardError
+          rescue
             # fallback to default
           end
 
@@ -139,7 +140,7 @@ module Mpp
           # The actual transaction building would use the tempo/pytempo Ruby bindings
           require "pytempo" # This would be the Ruby equivalent
 
-          tx = Pytempo::TempoTransaction.create(
+          tx = Pytempo::TempoTransaction.freeze(
             chain_id: chain_id,
             gas_limit: gas_limit,
             max_fee_per_gas: gas_price,
@@ -149,16 +150,16 @@ module Mpp
             fee_token: awaiting_fee_payer ? nil : currency,
             awaiting_fee_payer: awaiting_fee_payer,
             valid_before: valid_before,
-            calls: [Pytempo::Call.create(to: currency, value: 0, data: transfer_data)]
+            calls: [Pytempo::Call.freeze(to: currency, value: 0, data: transfer_data)]
           )
 
           signed_tx = tx.sign(@account.private_key)
 
           raw_hex = if awaiting_fee_payer
-                      "0x#{FeePayer.encode(signed_tx).unpack1("H*")}"
-                    else
-                      "0x#{signed_tx.encode.unpack1("H*")}"
-                    end
+            "0x#{FeePayer.encode(signed_tx).unpack1("H*")}"
+          else
+            "0x#{signed_tx.encode.unpack1("H*")}"
+          end
 
           [raw_hex, chain_id]
         end
@@ -177,7 +178,7 @@ module Mpp
           memo_clean = memo.delete_prefix("0x")
           unless memo_clean.length == 64
             raise ArgumentError,
-                  "memo must be exactly 32 bytes (64 hex chars), got #{memo_clean.length}"
+              "memo must be exactly 32 bytes (64 hex chars), got #{memo_clean.length}"
           end
 
           "0x#{selector}#{to_padded}#{amount_padded}#{memo_clean.downcase}"
@@ -186,7 +187,7 @@ module Mpp
 
       # Factory function to create a configured TempoMethod.
       def self.tempo(intents:, account: nil, fee_payer: nil, chain_id: nil, rpc_url: nil,
-                     root_account: nil, currency: nil, recipient: nil, decimals: 6, client_id: nil)
+        root_account: nil, currency: nil, recipient: nil, decimals: 6, client_id: nil)
         rpc_url ||= chain_id ? Defaults.rpc_url_for_chain(chain_id) : Defaults::RPC_URL
         currency ||= Defaults.default_currency_for_chain(chain_id)
 

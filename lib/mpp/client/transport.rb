@@ -1,3 +1,4 @@
+# typed: strict
 # frozen_string_literal: true
 
 require "net/http"
@@ -15,12 +16,16 @@ module Mpp
     # 3. Creates credentials and retries the request
     # 4. Returns the final response
     class Transport
+      extend T::Sig
+
+      sig { params(methods: T::Array[T.untyped]).void }
       def initialize(methods:)
-        @methods = methods.to_h { |m| [m.name, m] }
+        @methods = T.let(methods.to_h { |m| [m.name, m] }, T::Hash[String, T.untyped])
       end
 
       # Send an HTTP request with automatic 402 payment handling.
       # Returns [Net::HTTPResponse, body_string].
+      sig { params(method: T.untyped, url: T.any(URI::Generic, String), headers: T.untyped, body: T.untyped).returns(T.untyped) }
       def request(method, url, headers: {}, body: nil)
         uri = URI(url)
         response = send_request(uri, method, headers, body)
@@ -49,36 +54,41 @@ module Mpp
         send_request(uri, method, retry_headers, body)
       end
 
-      def get(url, **)
-        request("GET", url, **)
+      sig { params(url: T.any(URI::Generic, String), kwargs: T.untyped).returns(T.untyped) }
+      def get(url, **kwargs)
+        request("GET", url, **kwargs)
       end
 
-      def post(url, **)
-        request("POST", url, **)
+      sig { params(url: T.any(URI::Generic, String), kwargs: T.untyped).returns(T.untyped) }
+      def post(url, **kwargs)
+        request("POST", url, **kwargs)
       end
 
-      def put(url, **)
-        request("PUT", url, **)
+      sig { params(url: T.any(URI::Generic, String), kwargs: T.untyped).returns(T.untyped) }
+      def put(url, **kwargs)
+        request("PUT", url, **kwargs)
       end
 
-      def delete(url, **)
-        request("DELETE", url, **)
+      sig { params(url: T.any(URI::Generic, String), kwargs: T.untyped).returns(T.untyped) }
+      def delete(url, **kwargs)
+        request("DELETE", url, **kwargs)
       end
 
       private
 
+      sig { params(uri: URI::Generic, method: T.untyped, headers: T::Hash[String, String], body: T.nilable(String)).returns(Net::HTTPResponse) }
       def send_request(uri, method, headers, body)
         http = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl = uri.scheme == "https"
 
         request_class = case method.to_s.upcase
-                        when "GET"    then Net::HTTP::Get
-                        when "POST"   then Net::HTTP::Post
-                        when "PUT"    then Net::HTTP::Put
-                        when "DELETE" then Net::HTTP::Delete
-                        when "PATCH"  then Net::HTTP::Patch
-                        else raise ArgumentError, "Unsupported HTTP method: #{method}"
-                        end
+        when "GET" then Net::HTTP::Get
+        when "POST" then Net::HTTP::Post
+        when "PUT" then Net::HTTP::Put
+        when "DELETE" then Net::HTTP::Delete
+        when "PATCH" then Net::HTTP::Patch
+        else raise ArgumentError, "Unsupported HTTP method: #{method}"
+        end
 
         req = request_class.new(uri)
         headers.each { |k, v| req[k] = v }
@@ -87,6 +97,7 @@ module Mpp
         http.request(req)
       end
 
+      sig { params(www_auth_headers: T.untyped).returns(T::Array[T.untyped]) }
       def find_matching_challenge(www_auth_headers)
         www_auth_headers.each do |header|
           next unless header.downcase.start_with?("payment ")
@@ -103,19 +114,24 @@ module Mpp
     end
 
     # Module-level convenience methods
+    extend T::Sig
+
     module_function
 
-    def request(method, url, methods:, **)
+    sig { params(method: T.untyped, url: T.untyped, methods: T::Array[T.untyped], kwargs: T.untyped).returns(T.untyped) }
+    def request(method, url, methods:, **kwargs)
       transport = Transport.new(methods: methods)
-      transport.request(method, url, **)
+      transport.request(method, url, **kwargs)
     end
 
-    def get(url, methods:, **)
-      request("GET", url, methods: methods, **)
+    sig { params(url: T.untyped, methods: T::Array[T.untyped], kwargs: T.untyped).returns(T.untyped) }
+    def get(url, methods:, **kwargs)
+      request("GET", url, **T.unsafe({methods: methods, **kwargs}))
     end
 
-    def post(url, methods:, **)
-      request("POST", url, methods: methods, **)
+    sig { params(url: T.untyped, methods: T::Array[T.untyped], kwargs: T.untyped).returns(T.untyped) }
+    def post(url, methods:, **kwargs)
+      request("POST", url, **T.unsafe({methods: methods, **kwargs}))
     end
   end
 end

@@ -1,3 +1,4 @@
+# typed: strict
 # frozen_string_literal: true
 
 require "base64"
@@ -6,7 +7,9 @@ require "time"
 
 module Mpp
   module Parsing
-    MAX_HEADER_PAYLOAD_SIZE = 16 * 1024
+    extend T::Sig
+
+    MAX_HEADER_PAYLOAD_SIZE = T.let(16 * 1024, Integer)
 
     # RFC 9110 auth-param regex: key="value" or key=token
     AUTH_PARAM_RE = /([a-zA-Z_][\w-]*)\s*=\s*(?:"((?:[^"\\]|\\.)*)"|([^\s,]+))/
@@ -14,42 +17,47 @@ module Mpp
     module_function
 
     # Encode dict as URL-safe base64 JSON (compact, no padding).
+    sig { params(data: T.untyped).returns(String) }
     def b64_encode(data)
       compact_json = Mpp::Json.compact_encode(data)
       Base64.urlsafe_encode64(compact_json, padding: false)
     end
 
     # Decode URL-safe base64 JSON to hash.
+    sig { params(encoded: T.untyped).returns(T::Hash[T.untyped, T.untyped]) }
     def b64_decode(encoded)
-      raise Mpp::ParseError, "Header payload exceeds maximum size" if encoded.length > MAX_HEADER_PAYLOAD_SIZE
+      Kernel.raise Mpp::ParseError, "Header payload exceeds maximum size" if encoded.length > MAX_HEADER_PAYLOAD_SIZE
 
       padded = encoded + ("=" * ((-encoded.length) % 4))
       decoded = Base64.urlsafe_decode64(padded)
       obj = JSON.parse(decoded)
-      raise Mpp::ParseError, "Expected JSON object" unless obj.is_a?(Hash)
+      Kernel.raise Mpp::ParseError, "Expected JSON object" unless obj.is_a?(Hash)
 
       obj
     rescue ArgumentError, JSON::ParserError
-      raise Mpp::ParseError, "Invalid base64 or JSON encoding"
+      Kernel.raise Mpp::ParseError, "Invalid base64 or JSON encoding"
     end
 
     # Escape a string for use in a quoted-string. Rejects CRLF.
+    sig { params(str: String).returns(String) }
     def escape_quoted(str)
-      raise Mpp::ParseError, "Header value contains invalid CRLF characters" if str.include?("\r") || str.include?("\n")
+      Kernel.raise Mpp::ParseError, "Header value contains invalid CRLF characters" if str.include?("\r") || str.include?("\n")
 
       str.gsub("\\", "\\\\\\\\").gsub('"', '\\"')
     end
 
     # Unescape a quoted-string value.
+    sig { params(str: String).returns(String) }
     def unescape_quoted(str)
       str.gsub(/\\(.)/, '\1')
     end
 
     # Parse RFC 9110 auth-params into a hash.
+    sig { params(params_str: T.untyped).returns(T::Hash[T.untyped, T.untyped]) }
     def parse_auth_params(params_str)
       params = {}
       params_str.scan(AUTH_PARAM_RE) do |key, quoted_val, token_val|
-        raise Mpp::ParseError, "Duplicate parameter: #{key}" if params.key?(key)
+        Kernel.raise Mpp::ParseError, "Duplicate parameter: #{key}" if params.key?(key)
 
         value = quoted_val.nil? ? token_val : unescape_quoted(quoted_val)
         params[key] = value
@@ -58,32 +66,33 @@ module Mpp
     end
 
     # Parse a WWW-Authenticate header into a Challenge.
+    sig { params(header: T.untyped).returns(Mpp::Challenge) }
     def parse_www_authenticate(header)
       header = header.strip
-      raise Mpp::ParseError, "Expected 'Payment' authentication scheme" unless header.downcase.start_with?("payment ")
+      Kernel.raise Mpp::ParseError, "Expected 'Payment' authentication scheme" unless header.downcase.start_with?("payment ")
 
       params_str = header[8..].strip
       params = parse_auth_params(params_str)
 
       id = params["id"]
-      raise Mpp::ParseError, "Missing 'id' field" unless id && !id.empty?
+      Kernel.raise Mpp::ParseError, "Missing 'id' field" unless id && !id.empty?
 
       realm = params["realm"]
-      raise Mpp::ParseError, "Missing 'realm' field" unless realm && !realm.empty?
+      Kernel.raise Mpp::ParseError, "Missing 'realm' field" unless realm && !realm.empty?
 
       method = params["method"]
-      raise Mpp::ParseError, "Missing 'method' field" unless method && !method.empty?
+      Kernel.raise Mpp::ParseError, "Missing 'method' field" unless method && !method.empty?
 
       intent = params["intent"]
-      raise Mpp::ParseError, "Missing 'intent' field" unless intent && !intent.empty?
+      Kernel.raise Mpp::ParseError, "Missing 'intent' field" unless intent && !intent.empty?
 
       request_b64 = params["request"]
-      raise Mpp::ParseError, "Missing 'request' field" unless request_b64 && !request_b64.empty?
+      Kernel.raise Mpp::ParseError, "Missing 'request' field" unless request_b64 && !request_b64.empty?
 
       request = b64_decode(request_b64)
 
       opaque_b64 = params["opaque"]
-      opaque = opaque_b64 && !opaque_b64.empty? ? b64_decode(opaque_b64) : nil
+      opaque = (opaque_b64 && !opaque_b64.empty?) ? b64_decode(opaque_b64) : nil
 
       Mpp::Challenge.new(
         id: id,
@@ -100,6 +109,7 @@ module Mpp
     end
 
     # Format a Challenge as a WWW-Authenticate header value.
+    sig { params(challenge: T.untyped, realm: T.untyped).returns(String) }
     def format_www_authenticate(challenge, realm)
       request_b64 = b64_encode(challenge.request)
 
@@ -123,19 +133,20 @@ module Mpp
     end
 
     # Parse an Authorization header into a Credential.
+    sig { params(header: T.untyped).returns(Mpp::Credential) }
     def parse_authorization(header)
       header = header.strip
-      raise Mpp::ParseError, "Expected 'Payment' authentication scheme" unless header.downcase.start_with?("payment ")
+      Kernel.raise Mpp::ParseError, "Expected 'Payment' authentication scheme" unless header.downcase.start_with?("payment ")
 
       credential_b64 = header[8..].strip
       data = b64_decode(credential_b64)
 
-      raise Mpp::ParseError, "Credential missing required field: challenge" unless data.key?("challenge")
-      raise Mpp::ParseError, "Credential missing required field: payload" unless data.key?("payload")
+      Kernel.raise Mpp::ParseError, "Credential missing required field: challenge" unless data.key?("challenge")
+      Kernel.raise Mpp::ParseError, "Credential missing required field: payload" unless data.key?("payload")
 
       challenge_data = data["challenge"]
-      raise Mpp::ParseError, "Credential challenge must be an object" unless challenge_data.is_a?(Hash)
-      raise Mpp::ParseError, "Credential challenge missing required field: id" unless challenge_data.key?("id")
+      Kernel.raise Mpp::ParseError, "Credential challenge must be an object" unless challenge_data.is_a?(Hash)
+      Kernel.raise Mpp::ParseError, "Credential challenge missing required field: id" unless challenge_data.key?("id")
 
       echo = Mpp::ChallengeEcho.new(
         id: challenge_data["id"].to_s,
@@ -156,6 +167,7 @@ module Mpp
     end
 
     # Format a Credential as an Authorization header value.
+    sig { params(credential: T.untyped).returns(String) }
     def format_authorization(credential)
       challenge_dict = {
         "id" => credential.challenge.id,
@@ -179,24 +191,26 @@ module Mpp
     end
 
     # Parse an ISO 8601 timestamp string to Time.
+    sig { params(value: T.untyped).returns(Time) }
     def parse_timestamp(value)
       ts_str = value.gsub("Z", "+00:00")
       Time.iso8601(ts_str)
     rescue ArgumentError
-      raise Mpp::ParseError, "Invalid timestamp format"
+      Kernel.raise Mpp::ParseError, "Invalid timestamp format"
     end
 
     # Parse a Payment-Receipt header into a Receipt.
+    sig { params(header: T.untyped).returns(Mpp::Receipt) }
     def parse_payment_receipt(header)
       header = header.strip
       data = b64_decode(header)
 
       required = %w[status timestamp reference method]
       missing = required - data.keys
-      raise Mpp::ParseError, "Receipt missing required fields: #{missing}" unless missing.empty?
+      Kernel.raise Mpp::ParseError, "Receipt missing required fields: #{missing}" unless missing.empty?
 
       status = data["status"]
-      raise Mpp::ParseError, "Invalid receipt status" unless status == "success"
+      Kernel.raise Mpp::ParseError, "Invalid receipt status" unless status == "success"
 
       timestamp = parse_timestamp(data["timestamp"].to_s)
 
@@ -214,6 +228,7 @@ module Mpp
     end
 
     # Format a Receipt as a Payment-Receipt header value.
+    sig { params(receipt: Mpp::Receipt).returns(String) }
     def format_payment_receipt(receipt)
       timestamp_str = receipt.timestamp.utc.strftime("%Y-%m-%dT%H:%M:%S.%LZ")
 

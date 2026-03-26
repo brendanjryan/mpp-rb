@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 
 module Mpp
@@ -24,9 +25,9 @@ module Mpp
         end
 
         ChargeRequest = Data.define(:amount, :currency, :recipient, :description,
-                                    :external_id, :method_details) do
+          :external_id, :method_details) do
           def initialize(amount:, currency:, recipient:, description: nil,
-                         external_id: nil, method_details: nil)
+            external_id: nil, method_details: nil)
             raise ArgumentError, "currency must be a hex address" unless currency.match?(HEX_PATTERN)
             raise ArgumentError, "recipient must be a hex address" unless recipient.match?(HEX_PATTERN)
 
@@ -67,7 +68,7 @@ module Mpp
         module_function
 
         def parse_credential_payload(data)
-          raise ArgumentError, "Invalid credential payload" unless data.is_a?(Hash) && data.key?("type")
+          Kernel.raise ArgumentError, "Invalid credential payload" unless data.is_a?(Hash) && data.key?("type")
 
           case data["type"]
           when "hash"
@@ -75,7 +76,7 @@ module Mpp
           when "transaction"
             TransactionCredentialPayload.new(type: "transaction", signature: data["signature"])
           else
-            raise ArgumentError, "Invalid credential type: #{data["type"]}"
+            Kernel.raise ArgumentError, "Invalid credential type: #{data["type"]}"
           end
         end
       end

@@ -15,7 +15,7 @@ class MockClientMethod
     echo = challenge.to_echo
     Mpp::Credential.new(
       challenge: echo,
-      payload: { "type" => "transaction", "signature" => "0xmocksig" },
+      payload: {"type" => "transaction", "signature" => "0xmocksig"},
       source: "did:pkh:eip155:4217:0xmockaddr"
     )
   end
@@ -38,7 +38,7 @@ class TestClientTransport < Minitest::Test
 
   def test_passes_through_402_without_payment_scheme
     stub_request(:get, "https://api.example.com/resource")
-      .to_return(status: 402, body: "Payment required", headers: { "WWW-Authenticate" => "Bearer realm=test" })
+      .to_return(status: 402, body: "Payment required", headers: {"WWW-Authenticate" => "Bearer realm=test"})
 
     response = @transport.get("https://api.example.com/resource")
 
@@ -51,14 +51,14 @@ class TestClientTransport < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       expires: Mpp::Expires.minutes(5)
     )
     www_auth = challenge.to_www_authenticate("api.example.com")
 
     # First request returns 402, second returns 200
     stub_request(:get, "https://api.example.com/resource")
-      .to_return(status: 402, headers: { "WWW-Authenticate" => www_auth })
+      .to_return(status: 402, headers: {"WWW-Authenticate" => www_auth})
       .then
       .to_return(status: 200, body: '{"data":"paid"}')
 
@@ -74,13 +74,13 @@ class TestClientTransport < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       expires: Mpp::Expires.minutes(5)
     )
     www_auth = challenge.to_www_authenticate("api.example.com")
 
     stub_request(:get, "https://api.example.com/resource")
-      .to_return(status: 402, headers: { "WWW-Authenticate" => www_auth })
+      .to_return(status: 402, headers: {"WWW-Authenticate" => www_auth})
       .then
       .to_return(status: 200, body: "ok")
 
@@ -88,8 +88,8 @@ class TestClientTransport < Minitest::Test
 
     # Verify the retry had an Authorization header
     assert_requested(:get, "https://api.example.com/resource",
-                     headers: { "Authorization" => /^Payment / },
-                     times: 1)
+      headers: {"Authorization" => /^Payment /},
+      times: 1)
   end
 
   def test_skips_expired_challenge
@@ -98,13 +98,13 @@ class TestClientTransport < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       expires: "2020-01-01T00:00:00.000Z"
     )
     www_auth = challenge.to_www_authenticate("api.example.com")
 
     stub_request(:get, "https://api.example.com/resource")
-      .to_return(status: 402, headers: { "WWW-Authenticate" => www_auth })
+      .to_return(status: 402, headers: {"WWW-Authenticate" => www_auth})
 
     response = @transport.get("https://api.example.com/resource")
 
@@ -117,13 +117,13 @@ class TestClientTransport < Minitest::Test
       realm: "api.example.com",
       method: "unknown_method",
       intent: "charge",
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       expires: Mpp::Expires.minutes(5)
     )
     www_auth = challenge.to_www_authenticate("api.example.com")
 
     stub_request(:get, "https://api.example.com/resource")
-      .to_return(status: 402, headers: { "WWW-Authenticate" => www_auth })
+      .to_return(status: 402, headers: {"WWW-Authenticate" => www_auth})
 
     response = @transport.get("https://api.example.com/resource")
 
@@ -138,13 +138,13 @@ class TestClientConvenience < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       expires: Mpp::Expires.minutes(5)
     )
     www_auth = challenge.to_www_authenticate("api.example.com")
 
     stub_request(:get, "https://api.example.com/resource")
-      .to_return(status: 402, headers: { "WWW-Authenticate" => www_auth })
+      .to_return(status: 402, headers: {"WWW-Authenticate" => www_auth})
       .then
       .to_return(status: 200, body: "paid")
 

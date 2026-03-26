@@ -1,8 +1,11 @@
+# typed: strict
 # frozen_string_literal: true
 
 module Mpp
   module Server
     module Defaults
+      extend T::Sig
+
       SECRET_KEY_NAME = "MPP_SECRET_KEY"
 
       REALM_ENV_VARS = %w[
@@ -20,6 +23,7 @@ module Mpp
       module_function
 
       # Detect server realm from environment.
+      sig { returns(String) }
       def detect_realm
         REALM_ENV_VARS.each do |var|
           value = ENV.fetch(var, nil)
@@ -29,11 +33,12 @@ module Mpp
       end
 
       # Get server secret key from environment.
+      sig { returns(String) }
       def detect_secret_key
         value = ENV.fetch(SECRET_KEY_NAME, nil)
         return value if value && !value.strip.empty?
 
-        raise ArgumentError, "Missing secret key. Set MPP_SECRET_KEY or pass secret_key explicitly."
+        Kernel.raise ArgumentError, "Missing secret key. Set MPP_SECRET_KEY or pass secret_key explicitly."
       end
     end
   end

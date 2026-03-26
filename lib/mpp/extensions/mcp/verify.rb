@@ -1,3 +1,4 @@
+# typed: strict
 # frozen_string_literal: true
 
 require "time"
@@ -5,18 +6,21 @@ require "time"
 module Mpp
   module Extensions
     module MCP
-      DEFAULT_CHALLENGE_TTL = 5 * 60 # 5 minutes in seconds
+      extend T::Sig
+
+      DEFAULT_CHALLENGE_TTL = T.let(5 * 60, Integer) # 5 minutes in seconds
 
       module_function
 
       # Verify a payment credential or generate a new challenge.
       # Returns MCPChallenge or [MCPCredential, MCPReceipt].
+      sig { params(meta: T.untyped, intent: T.untyped, request: T.untyped, realm: String, secret_key: String, method: T.nilable(String), expires_in: Integer, description: T.nilable(String)).returns(T.untyped) }
       def verify_or_challenge(meta:, intent:, request:, realm:, secret_key:,
-                              method: nil, expires_in: DEFAULT_CHALLENGE_TTL, description: nil)
+        method: nil, expires_in: DEFAULT_CHALLENGE_TTL, description: nil)
         method_name = method || "tempo"
         meta ||= {}
 
-        new_challenge = lambda {
+        new_challenge = Kernel.lambda {
           create_challenge(
             method: method_name,
             intent_name: intent.name,
@@ -34,7 +38,7 @@ module Mpp
         begin
           mcp_credential = MCPCredential.from_dict(credential_data)
         rescue KeyError, TypeError, NoMethodError => e
-          raise MalformedCredentialError.new(detail: "Invalid credential structure: #{e}")
+          Kernel.raise MalformedCredentialError.new(detail: "Invalid credential structure: #{e}")
         end
 
         # Stateless challenge verification
@@ -92,7 +96,7 @@ module Mpp
         begin
           core_receipt = intent.verify(core_credential, request)
         rescue Mpp::VerificationError => e
-          raise PaymentVerificationError.new(
+          Kernel.raise PaymentVerificationError.new(
             challenges: [new_challenge.call],
             reason: "verification-failed",
             detail: e.message
@@ -109,8 +113,9 @@ module Mpp
         [mcp_credential, mcp_receipt]
       end
 
+      sig { params(method: T.untyped, intent_name: T.untyped, request: T.untyped, realm: T.untyped, secret_key: T.untyped, expires_in: BasicObject, description: T.untyped).returns(Mpp::Extensions::MCP::MCPChallenge) }
       def create_challenge(method:, intent_name:, request:, realm:, secret_key:,
-                           expires_in: DEFAULT_CHALLENGE_TTL, description: nil)
+        expires_in: DEFAULT_CHALLENGE_TTL, description: nil)
         expires_time = Time.now.utc + expires_in
         expires = expires_time.iso8601
         expires = expires.sub(/\+00:00$/, "Z")
@@ -135,6 +140,7 @@ module Mpp
         )
       end
 
+      sig { params(request: T.untyped).returns(T.nilable(T::Hash[T.untyped, T.untyped])) }
       def extract_settlement(request)
         settlement = {}
         settlement["amount"] = request["amount"] if request.key?("amount")

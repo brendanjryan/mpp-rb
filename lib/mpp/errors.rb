@@ -1,3 +1,4 @@
+# typed: strict
 # frozen_string_literal: true
 
 module Mpp
@@ -11,6 +12,9 @@ module Mpp
 
   # Base class for all payment-related errors with RFC 9457 support.
   class PaymentError < StandardError
+    extend T::Sig
+
+    sig { params(subclass: T::Class[T.anything]).returns(T.untyped) }
     def self.inherited(subclass)
       super
       return if subclass.instance_variable_defined?(:@_mpp_configured)
@@ -19,35 +23,50 @@ module Mpp
       name = subclass.name&.split("::")&.last || "PaymentError"
       unless subclass.instance_variable_defined?(:@type)
         subclass.instance_variable_set(:@type,
-                                       "#{BASE_URI}/#{to_slug(name)}")
+          "#{BASE_URI}/#{to_slug(name)}")
       end
       subclass.instance_variable_set(:@title, to_title(name)) unless subclass.instance_variable_defined?(:@title)
       subclass.instance_variable_set(:@status, 402) unless subclass.instance_variable_defined?(:@status)
     end
 
     class << self
-      attr_reader :status, :type, :title
+      extend T::Sig
+
+      sig { returns(T.nilable(Integer)) }
+      attr_reader :status
+
+      sig { returns(T.nilable(String)) }
+      attr_reader :type
+
+      sig { returns(T.nilable(String)) }
+      attr_reader :title
 
       private
 
+      sig { params(name: String).returns(String) }
       def to_slug(name)
         name.sub(/Error$/, "").gsub(/(?<=[a-z0-9])(?=[A-Z])/, "-").downcase
       end
 
+      sig { params(name: String).returns(String) }
       def to_title(name)
         name.sub(/Error$/, "").gsub(/(?<=[a-z0-9])(?=[A-Z])/, " ")
       end
     end
 
-    @status = 402
-    @type = "#{BASE_URI}/payment-error"
-    @title = "Payment Error"
+    @status = T.let(402, Integer)
+    @type = T.let("#{BASE_URI}/payment-error", String)
+    @title = T.let("Payment Error", String)
 
+    sig { returns(T.untyped) }
     def status = self.class.status
+    sig { returns(T.untyped) }
     def type = self.class.type
+    sig { returns(T.untyped) }
     def title = self.class.title
 
     # Convert to RFC 9457 Problem Details format.
+    sig { params(challenge_id: T.untyped).returns(T::Hash[T.untyped, T.untyped]) }
     def to_problem_details(challenge_id: nil)
       details = {
         "type" => type,
@@ -61,6 +80,9 @@ module Mpp
   end
 
   class PaymentRequiredError < PaymentError
+    extend T::Sig
+
+    sig { params(realm: T.untyped, description: T.untyped).void }
     def initialize(realm: nil, description: nil)
       parts = ["Payment is required"]
       parts << "for \"#{realm}\"" if realm
@@ -70,6 +92,9 @@ module Mpp
   end
 
   class MalformedCredentialError < PaymentError
+    extend T::Sig
+
+    sig { params(reason: T.untyped).void }
     def initialize(reason: nil)
       msg = reason ? "Credential is malformed: #{reason}." : "Credential is malformed."
       super(msg)
@@ -77,6 +102,9 @@ module Mpp
   end
 
   class InvalidChallengeError < PaymentError
+    extend T::Sig
+
+    sig { params(challenge_id: T.untyped, reason: T.untyped).void }
     def initialize(challenge_id: nil, reason: nil)
       id_part = challenge_id ? " \"#{challenge_id}\"" : ""
       reason_part = reason ? ": #{reason}" : ""
@@ -85,6 +113,9 @@ module Mpp
   end
 
   class VerificationFailedError < PaymentError
+    extend T::Sig
+
+    sig { params(reason: T.untyped).void }
     def initialize(reason: nil)
       msg = reason ? "Payment verification failed: #{reason}." : "Payment verification failed."
       super(msg)
@@ -92,6 +123,9 @@ module Mpp
   end
 
   class PaymentExpiredError < PaymentError
+    extend T::Sig
+
+    sig { params(expires: T.untyped).void }
     def initialize(expires: nil)
       msg = expires ? "Payment expired at #{expires}." : "Payment has expired."
       super(msg)
@@ -99,6 +133,9 @@ module Mpp
   end
 
   class InvalidPayloadError < PaymentError
+    extend T::Sig
+
+    sig { params(reason: T.untyped).void }
     def initialize(reason: nil)
       msg = reason ? "Credential payload is invalid: #{reason}." : "Credential payload is invalid."
       super(msg)
@@ -106,8 +143,11 @@ module Mpp
   end
 
   class BadRequestError < PaymentError
-    @status = 400
+    extend T::Sig
 
+    @status = T.let(400, Integer)
+
+    sig { params(reason: T.untyped).void }
     def initialize(reason: nil)
       msg = reason ? "Bad request: #{reason}." : "Bad request."
       super(msg)
@@ -115,6 +155,9 @@ module Mpp
   end
 
   class PaymentInsufficientError < PaymentError
+    extend T::Sig
+
+    sig { params(reason: T.untyped).void }
     def initialize(reason: nil)
       msg = reason ? "Payment insufficient: #{reason}." : "Payment amount is insufficient."
       super(msg)
@@ -122,10 +165,13 @@ module Mpp
   end
 
   class PaymentMethodUnsupportedError < PaymentError
-    @status = 400
-    @type = "#{BASE_URI}/method-unsupported"
-    @title = "Method Unsupported"
+    extend T::Sig
 
+    @status = T.let(400, Integer)
+    @type = T.let("#{BASE_URI}/method-unsupported", String)
+    @title = T.let("Method Unsupported", String)
+
+    sig { params(method: T.untyped).void }
     def initialize(method: nil)
       msg = method ? "Payment method \"#{method}\" is not supported." : "Payment method is not supported."
       super(msg)
@@ -133,8 +179,99 @@ module Mpp
   end
 
   class PaymentActionRequiredError < PaymentError
+    extend T::Sig
+
+    sig { params(reason: T.untyped).void }
     def initialize(reason: nil)
       msg = reason ? "Payment requires action: #{reason}." : "Payment requires action."
+      super(msg)
+    end
+  end
+
+  # Session-specific errors (payment channel operations)
+
+  class InsufficientBalanceError < PaymentError
+    extend T::Sig
+
+    @type = T.let("#{BASE_URI}/session/insufficient-balance", String)
+
+    sig { params(reason: T.untyped).void }
+    def initialize(reason: nil)
+      msg = reason ? "Insufficient balance: #{reason}." : "Insufficient balance in payment channel."
+      super(msg)
+    end
+  end
+
+  class InvalidSignatureError < PaymentError
+    extend T::Sig
+
+    @type = T.let("#{BASE_URI}/session/invalid-signature", String)
+
+    sig { params(reason: T.untyped).void }
+    def initialize(reason: nil)
+      msg = reason ? "Invalid signature: #{reason}." : "Voucher or close request signature is invalid."
+      super(msg)
+    end
+  end
+
+  class SignerMismatchError < PaymentError
+    extend T::Sig
+
+    @type = T.let("#{BASE_URI}/session/signer-mismatch", String)
+
+    sig { params(reason: T.untyped).void }
+    def initialize(reason: nil)
+      msg = reason ? "Signer mismatch: #{reason}." : "Recovered signer is not authorized for this channel."
+      super(msg)
+    end
+  end
+
+  class AmountExceedsDepositError < PaymentError
+    extend T::Sig
+
+    @type = T.let("#{BASE_URI}/session/amount-exceeds-deposit", String)
+
+    sig { params(reason: T.untyped).void }
+    def initialize(reason: nil)
+      msg = reason ? "Amount exceeds deposit: #{reason}." : "Voucher cumulative amount exceeds the channel deposit."
+      super(msg)
+    end
+  end
+
+  class DeltaTooSmallError < PaymentError
+    extend T::Sig
+
+    @type = T.let("#{BASE_URI}/session/delta-too-small", String)
+
+    sig { params(reason: T.untyped).void }
+    def initialize(reason: nil)
+      msg = reason ? "Delta too small: #{reason}." : "Voucher amount increase is below the minimum delta."
+      super(msg)
+    end
+  end
+
+  class ChannelNotFoundError < PaymentError
+    extend T::Sig
+
+    @type = T.let("#{BASE_URI}/session/channel-not-found", String)
+    @status = T.let(410, Integer)
+
+    sig { params(reason: T.untyped).void }
+    def initialize(reason: nil)
+      msg = reason ? "Channel not found: #{reason}." : "No channel with this ID exists."
+      super(msg)
+    end
+  end
+
+  class ChannelClosedError < PaymentError
+    extend T::Sig
+
+    @type = T.let("#{BASE_URI}/session/channel-closed", String)
+    @status = T.let(410, Integer)
+
+    sig { params(reason: T.untyped).void }
+    def initialize(reason: nil)
+      msg = reason ? "Channel closed: #{reason}." : "Channel is closed or finalized."
       super(msg)
     end
   end

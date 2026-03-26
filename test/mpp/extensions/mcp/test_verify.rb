@@ -26,7 +26,7 @@ class TestMCPVerify < Minitest::Test
     result = Mpp::Extensions::MCP.verify_or_challenge(
       meta: nil,
       intent: @intent,
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       realm: REALM,
       secret_key: SECRET
     )
@@ -41,7 +41,7 @@ class TestMCPVerify < Minitest::Test
     result = Mpp::Extensions::MCP.verify_or_challenge(
       meta: {},
       intent: @intent,
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       realm: REALM,
       secret_key: SECRET
     )
@@ -53,7 +53,7 @@ class TestMCPVerify < Minitest::Test
     result = Mpp::Extensions::MCP.verify_or_challenge(
       meta: nil,
       intent: @intent,
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       realm: REALM,
       secret_key: SECRET
     )
@@ -63,7 +63,7 @@ class TestMCPVerify < Minitest::Test
   end
 
   def test_successful_verification
-    request = { "amount" => "1000000" }
+    request = {"amount" => "1000000"}
     challenge = Mpp::Extensions::MCP.create_challenge(
       method: "tempo",
       intent_name: "charge",
@@ -73,7 +73,7 @@ class TestMCPVerify < Minitest::Test
     )
     credential = Mpp::Extensions::MCP::MCPCredential.new(
       challenge: challenge,
-      payload: { "type" => "transaction", "signature" => "0xabc" },
+      payload: {"type" => "transaction", "signature" => "0xabc"},
       source: "did:pkh:eip155:4217:0x1234"
     )
     meta = credential.to_meta
@@ -96,7 +96,7 @@ class TestMCPVerify < Minitest::Test
   end
 
   def test_rejects_wrong_secret
-    request = { "amount" => "1000000" }
+    request = {"amount" => "1000000"}
     challenge = Mpp::Extensions::MCP.create_challenge(
       method: "tempo",
       intent_name: "charge",
@@ -106,7 +106,7 @@ class TestMCPVerify < Minitest::Test
     )
     credential = Mpp::Extensions::MCP::MCPCredential.new(
       challenge: challenge,
-      payload: { "type" => "hash", "hash" => "0x123" }
+      payload: {"type" => "hash", "hash" => "0x123"}
     )
     meta = credential.to_meta
 
@@ -122,17 +122,17 @@ class TestMCPVerify < Minitest::Test
   end
 
   def test_rejects_mismatched_request
-    request = { "amount" => "1000000" }
+    request = {"amount" => "1000000"}
     challenge = Mpp::Extensions::MCP.create_challenge(
       method: "tempo",
       intent_name: "charge",
-      request: { "amount" => "9999999" },
+      request: {"amount" => "9999999"},
       realm: REALM,
       secret_key: SECRET
     )
     credential = Mpp::Extensions::MCP::MCPCredential.new(
       challenge: challenge,
-      payload: { "type" => "hash", "hash" => "0x123" }
+      payload: {"type" => "hash", "hash" => "0x123"}
     )
     meta = credential.to_meta
 
@@ -148,7 +148,7 @@ class TestMCPVerify < Minitest::Test
   end
 
   def test_receipt_includes_settlement
-    request = { "amount" => "1000000", "currency" => "0x1234" }
+    request = {"amount" => "1000000", "currency" => "0x1234"}
     challenge = Mpp::Extensions::MCP.create_challenge(
       method: "tempo",
       intent_name: "charge",
@@ -158,7 +158,7 @@ class TestMCPVerify < Minitest::Test
     )
     credential = Mpp::Extensions::MCP::MCPCredential.new(
       challenge: challenge,
-      payload: { "type" => "transaction", "signature" => "0xabc" }
+      payload: {"type" => "transaction", "signature" => "0xabc"}
     )
     meta = credential.to_meta
 
@@ -171,7 +171,7 @@ class TestMCPVerify < Minitest::Test
     )
     _cred, receipt = result
 
-    assert_equal({ "amount" => "1000000", "currency" => "0x1234" }, receipt.settlement)
+    assert_equal({"amount" => "1000000", "currency" => "0x1234"}, receipt.settlement)
   end
 end
 
@@ -180,7 +180,7 @@ class TestMCPCreateChallenge < Minitest::Test
     challenge = Mpp::Extensions::MCP.create_challenge(
       method: "tempo",
       intent_name: "charge",
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       realm: "api.example.com",
       secret_key: "test-secret"
     )
@@ -196,7 +196,7 @@ class TestMCPCreateChallenge < Minitest::Test
     challenge = Mpp::Extensions::MCP.create_challenge(
       method: "tempo",
       intent_name: "charge",
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       realm: "api.example.com",
       secret_key: "test-secret",
       description: "API call fee"
@@ -210,6 +210,6 @@ class TestPaymentCapabilities < Minitest::Test
   def test_payment_capabilities
     caps = Mpp::Extensions::MCP.payment_capabilities(["tempo"], ["charge"])
 
-    assert_equal({ "methods" => ["tempo"], "intents" => ["charge"] }, caps["payment"])
+    assert_equal({"methods" => ["tempo"], "intents" => ["charge"]}, caps["payment"])
   end
 end

@@ -1,3 +1,4 @@
+# typed: strict
 # frozen_string_literal: true
 
 require_relative "method"
@@ -7,16 +8,30 @@ module Mpp
     DEFAULT_DECIMALS = 6
 
     class MppHandler
-      attr_reader :method, :realm, :secret_key, :defaults
+      extend T::Sig
 
+      sig { returns(T.untyped) }
+      attr_reader :method
+
+      sig { returns(String) }
+      attr_reader :realm
+
+      sig { returns(String) }
+      attr_reader :secret_key
+
+      sig { returns(T::Hash[String, T.untyped]) }
+      attr_reader :defaults
+
+      sig { params(method: T.untyped, realm: String, secret_key: String, defaults: T.nilable(T::Hash[String, T.untyped])).void }
       def initialize(method:, realm:, secret_key:, defaults: nil)
-        @method = method
-        @realm = realm
-        @secret_key = secret_key
-        @defaults = defaults || {}
+        @method = T.let(method, T.untyped)
+        @realm = T.let(realm, String)
+        @secret_key = T.let(secret_key, String)
+        @defaults = T.let(defaults || {}, T::Hash[String, T.untyped])
       end
 
       # Create with auto-detected realm and secret_key.
+      sig { params(method: T.untyped, realm: T.untyped, secret_key: T.untyped).returns(T.attached_class) }
       def self.create(method:, realm: nil, secret_key: nil)
         new(
           method: method,
@@ -26,8 +41,9 @@ module Mpp
       end
 
       # Handle a charge intent.
+      sig { params(authorization: T.nilable(String), amount: String, currency: T.nilable(String), recipient: T.nilable(String), expires: T.nilable(String), description: T.nilable(String), memo: T.nilable(String), fee_payer: T::Boolean, chain_id: T.nilable(Integer), extra: T.nilable(T::Hash[String, String])).returns(T.untyped) }
       def charge(authorization, amount, currency: nil, recipient: nil, expires: nil,
-                 description: nil, memo: nil, fee_payer: false, chain_id: nil, extra: nil)
+        description: nil, memo: nil, fee_payer: false, chain_id: nil, extra: nil)
         intent = @method.intents["charge"]
         raise ArgumentError, "Method #{@method.name} does not support charge intent" unless intent
 

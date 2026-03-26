@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 
 module Mpp
@@ -19,7 +20,7 @@ module Mpp
 
           keychain_sig = [SIGNATURE_TYPE].pack("C") + root_bytes + inner_sig
           unless keychain_sig.bytesize == SIGNATURE_LENGTH
-            raise "Invalid keychain signature length: #{keychain_sig.bytesize}"
+            Kernel.raise "Invalid keychain signature length: #{keychain_sig.bytesize}"
           end
 
           keychain_sig

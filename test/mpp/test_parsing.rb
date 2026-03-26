@@ -9,7 +9,7 @@ class TestParsing < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" }
+      request: {"amount" => "1000000"}
     )
     header = challenge.to_www_authenticate("api.example.com")
     parsed = Mpp::Challenge.from_www_authenticate(header)
@@ -18,7 +18,7 @@ class TestParsing < Minitest::Test
     assert_equal "api.example.com", parsed.realm
     assert_equal "tempo", parsed.method
     assert_equal "charge", parsed.intent
-    assert_equal({ "amount" => "1000000" }, parsed.request)
+    assert_equal({"amount" => "1000000"}, parsed.request)
   end
 
   def test_parse_www_authenticate_with_optional_fields
@@ -27,7 +27,7 @@ class TestParsing < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       expires: "2026-01-29T12:00:00Z",
       description: "Test payment",
       digest: "sha-256=abc123"
@@ -47,7 +47,7 @@ class TestParsing < Minitest::Test
       realm: "test.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "5000000", "currency" => "0x1234" },
+      request: {"amount" => "5000000", "currency" => "0x1234"},
       expires: "2026-06-01T00:00:00Z"
     )
     header = challenge.to_www_authenticate("test.example.com")
@@ -77,7 +77,7 @@ class TestParsing < Minitest::Test
     )
     credential = Mpp::Credential.new(
       challenge: echo,
-      payload: { "type" => "transaction", "signature" => "0xabc" },
+      payload: {"type" => "transaction", "signature" => "0xabc"},
       source: "did:pkh:eip155:4217:0x1234"
     )
     header = credential.to_authorization
@@ -102,7 +102,7 @@ class TestParsing < Minitest::Test
     )
     credential = Mpp::Credential.new(
       challenge: echo,
-      payload: { "type" => "hash", "hash" => "0xdef" }
+      payload: {"type" => "hash", "hash" => "0xdef"}
     )
     header = credential.to_authorization
     parsed = Mpp::Credential.from_authorization(header)
@@ -162,7 +162,7 @@ class TestParsing < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" }
+      request: {"amount" => "1000000"}
     )
     echo = challenge.to_echo
 
@@ -193,13 +193,56 @@ class TestParsing < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" },
-      meta: { "pi" => "pi_3abc123" }
+      request: {"amount" => "1000000"},
+      meta: {"pi" => "pi_3abc123"}
     )
     header = challenge.to_www_authenticate("api.example.com")
     parsed = Mpp::Challenge.from_www_authenticate(header)
 
-    assert_equal({ "pi" => "pi_3abc123" }, parsed.opaque)
+    assert_equal({"pi" => "pi_3abc123"}, parsed.opaque)
     assert parsed.verify("test-secret", "api.example.com")
+  end
+
+  def test_from_www_authenticate_list_single
+    challenge = Mpp::Challenge.create(
+      secret_key: "test-secret",
+      realm: "api.example.com",
+      method: "tempo",
+      intent: "charge",
+      request: {"amount" => "1000000"}
+    )
+    header = challenge.to_www_authenticate("api.example.com")
+    result = Mpp::Challenge.from_www_authenticate_list(header)
+
+    assert_equal 1, result.length
+    assert_equal challenge.id, result[0].id
+  end
+
+  def test_from_www_authenticate_list_multiple
+    c1 = Mpp::Challenge.create(
+      secret_key: "s1",
+      realm: "api.example.com",
+      method: "tempo",
+      intent: "charge",
+      request: {"amount" => "100"}
+    )
+    c2 = Mpp::Challenge.create(
+      secret_key: "s2",
+      realm: "api.example.com",
+      method: "other",
+      intent: "charge",
+      request: {"amount" => "200"}
+    )
+    header = "#{c1.to_www_authenticate("api.example.com")}, #{c2.to_www_authenticate("api.example.com")}"
+    result = Mpp::Challenge.from_www_authenticate_list(header)
+
+    assert_equal 2, result.length
+    assert_equal "tempo", result[0].method
+    assert_equal "other", result[1].method
+  end
+
+  def test_from_www_authenticate_list_empty
+    assert_equal [], Mpp::Challenge.from_www_authenticate_list("Bearer token123")
+    assert_equal [], Mpp::Challenge.from_www_authenticate_list("")
   end
 end

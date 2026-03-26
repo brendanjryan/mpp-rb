@@ -44,7 +44,7 @@ class TestUnits < Minitest::Test
   end
 
   def test_transform_units_with_decimals
-    request = { "amount" => "1.5", "decimals" => 6 }
+    request = {"amount" => "1.5", "decimals" => 6}
     result = Mpp::Units.transform_units(request)
 
     assert_equal "1500000", result["amount"]
@@ -52,14 +52,14 @@ class TestUnits < Minitest::Test
   end
 
   def test_transform_units_without_decimals
-    request = { "amount" => "1000000" }
+    request = {"amount" => "1000000"}
     result = Mpp::Units.transform_units(request)
 
     assert_equal "1000000", result["amount"]
   end
 
   def test_transform_units_with_suggested_deposit
-    request = { "amount" => "1.0", "suggestedDeposit" => "10.0", "decimals" => 6 }
+    request = {"amount" => "1.0", "suggestedDeposit" => "10.0", "decimals" => 6}
     result = Mpp::Units.transform_units(request)
 
     assert_equal "1000000", result["amount"]
@@ -67,7 +67,7 @@ class TestUnits < Minitest::Test
   end
 
   def test_transform_units_rejects_non_integer_decimals
-    request = { "amount" => "1.0", "decimals" => "six" }
+    request = {"amount" => "1.0", "decimals" => "six"}
     assert_raises(ArgumentError) { Mpp::Units.transform_units(request) }
   end
 end

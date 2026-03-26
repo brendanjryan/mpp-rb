@@ -1,3 +1,4 @@
+# typed: strict
 # frozen_string_literal: true
 
 module Mpp
@@ -9,5 +10,6 @@ module Mpp
     autoload :Verify, "mpp/server/verify"
     autoload :MppHandler, "mpp/server/mpp_handler"
     autoload :Decorator, "mpp/server/decorator"
+    autoload :Middleware, "mpp/server/middleware"
   end
 end

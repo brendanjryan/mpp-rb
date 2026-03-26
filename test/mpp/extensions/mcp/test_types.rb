@@ -9,7 +9,7 @@ class TestMCPTypes < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000" },
+      request: {"amount" => "1000"},
       expires: "2026-01-15T12:05:00Z",
       description: "API call fee"
     )
@@ -19,7 +19,7 @@ class TestMCPTypes < Minitest::Test
     assert_equal "api.example.com", dict["realm"]
     assert_equal "tempo", dict["method"]
     assert_equal "charge", dict["intent"]
-    assert_equal({ "amount" => "1000" }, dict["request"])
+    assert_equal({"amount" => "1000"}, dict["request"])
     assert_equal "2026-01-15T12:05:00Z", dict["expires"]
     assert_equal "API call fee", dict["description"]
   end
@@ -30,7 +30,7 @@ class TestMCPTypes < Minitest::Test
       "realm" => "api.example.com",
       "method" => "tempo",
       "intent" => "charge",
-      "request" => { "amount" => "1000" }
+      "request" => {"amount" => "1000"}
     }
     challenge = Mpp::Extensions::MCP::MCPChallenge.from_dict(data)
 
@@ -44,7 +44,7 @@ class TestMCPTypes < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000" },
+      request: {"amount" => "1000"},
       expires: "2026-01-15T12:05:00Z"
     )
     roundtripped = Mpp::Extensions::MCP::MCPChallenge.from_dict(original.to_dict)
@@ -58,11 +58,11 @@ class TestMCPTypes < Minitest::Test
   def test_mcp_credential_to_dict
     challenge = Mpp::Extensions::MCP::MCPChallenge.new(
       id: "ch_abc", realm: "api.example.com", method: "tempo",
-      intent: "charge", request: { "amount" => "1000" }
+      intent: "charge", request: {"amount" => "1000"}
     )
     credential = Mpp::Extensions::MCP::MCPCredential.new(
       challenge: challenge,
-      payload: { "type" => "transaction", "signature" => "0xabc" },
+      payload: {"type" => "transaction", "signature" => "0xabc"},
       source: "did:pkh:eip155:4217:0x1234"
     )
     dict = credential.to_dict
@@ -75,10 +75,10 @@ class TestMCPTypes < Minitest::Test
   def test_mcp_credential_to_meta
     challenge = Mpp::Extensions::MCP::MCPChallenge.new(
       id: "ch_abc", realm: "api.example.com", method: "tempo",
-      intent: "charge", request: { "amount" => "1000" }
+      intent: "charge", request: {"amount" => "1000"}
     )
     credential = Mpp::Extensions::MCP::MCPCredential.new(
-      challenge: challenge, payload: { "type" => "hash", "hash" => "0xabc" }
+      challenge: challenge, payload: {"type" => "hash", "hash" => "0xabc"}
     )
     meta = credential.to_meta
 
@@ -88,10 +88,10 @@ class TestMCPTypes < Minitest::Test
   def test_mcp_credential_from_meta
     challenge = Mpp::Extensions::MCP::MCPChallenge.new(
       id: "ch_abc", realm: "api.example.com", method: "tempo",
-      intent: "charge", request: { "amount" => "1000" }
+      intent: "charge", request: {"amount" => "1000"}
     )
     credential = Mpp::Extensions::MCP::MCPCredential.new(
-      challenge: challenge, payload: { "type" => "hash", "hash" => "0xabc" }
+      challenge: challenge, payload: {"type" => "hash", "hash" => "0xabc"}
     )
     meta = credential.to_meta
     parsed = Mpp::Extensions::MCP::MCPCredential.from_meta(meta)
@@ -107,11 +107,11 @@ class TestMCPTypes < Minitest::Test
   def test_mcp_credential_to_core
     challenge = Mpp::Extensions::MCP::MCPChallenge.new(
       id: "ch_abc", realm: "api.example.com", method: "tempo",
-      intent: "charge", request: { "amount" => "1000" }
+      intent: "charge", request: {"amount" => "1000"}
     )
     mcp_cred = Mpp::Extensions::MCP::MCPCredential.new(
       challenge: challenge,
-      payload: { "type" => "transaction", "signature" => "0xabc" },
+      payload: {"type" => "transaction", "signature" => "0xabc"},
       source: "did:pkh:eip155:4217:0x1234"
     )
     core_cred = mcp_cred.to_core
@@ -128,7 +128,7 @@ class TestMCPTypes < Minitest::Test
       method: "tempo",
       timestamp: "2026-01-15T12:00:30Z",
       reference: "0xtx789",
-      settlement: { "amount" => "1000", "currency" => "0x1234" }
+      settlement: {"amount" => "1000", "currency" => "0x1234"}
     )
     dict = receipt.to_dict
 
@@ -159,12 +159,12 @@ class TestMCPTypes < Minitest::Test
       core_receipt,
       challenge_id: "ch_abc",
       method: "tempo",
-      settlement: { "amount" => "1000" }
+      settlement: {"amount" => "1000"}
     )
 
     assert_equal "success", mcp_receipt.status
     assert_equal "ch_abc", mcp_receipt.challenge_id
     assert_equal "0xtx789", mcp_receipt.reference
-    assert_equal({ "amount" => "1000" }, mcp_receipt.settlement)
+    assert_equal({"amount" => "1000"}, mcp_receipt.settlement)
   end
 end

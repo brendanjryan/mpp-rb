@@ -1,17 +1,26 @@
+# typed: strict
 # frozen_string_literal: true
 
 module Mpp
   module Extensions
     module MCP
       class PaymentRequiredError < StandardError
-        attr_reader :challenges, :code
+        extend T::Sig
 
+        sig { returns(T.untyped) }
+        attr_reader :challenges
+
+        sig { returns(Integer) }
+        attr_reader :code
+
+        sig { params(challenges: T.untyped, message: BasicObject).void }
         def initialize(challenges:, message: "Payment Required")
-          @challenges = challenges
-          @code = CODE_PAYMENT_REQUIRED
+          @challenges = T.let(challenges, T.untyped)
+          @code = T.let(CODE_PAYMENT_REQUIRED, Integer)
           super(message)
         end
 
+        sig { returns(T::Hash[T.untyped, T.untyped]) }
         def to_jsonrpc_error
           {
             "code" => CODE_PAYMENT_REQUIRED,
@@ -25,16 +34,30 @@ module Mpp
       end
 
       class PaymentVerificationError < StandardError
-        attr_reader :challenges, :reason, :detail, :code
+        extend T::Sig
 
+        sig { returns(T.untyped) }
+        attr_reader :challenges
+
+        sig { returns(T.untyped) }
+        attr_reader :reason
+
+        sig { returns(T.untyped) }
+        attr_reader :detail
+
+        sig { returns(Integer) }
+        attr_reader :code
+
+        sig { params(challenges: T.untyped, reason: T.untyped, detail: T.untyped, message: BasicObject).void }
         def initialize(challenges:, reason: nil, detail: nil, message: "Payment Verification Failed")
-          @challenges = challenges
-          @reason = reason
-          @detail = detail
-          @code = CODE_PAYMENT_VERIFICATION_FAILED
+          @challenges = T.let(challenges, T.untyped)
+          @reason = T.let(reason, T.untyped)
+          @detail = T.let(detail, T.untyped)
+          @code = T.let(CODE_PAYMENT_VERIFICATION_FAILED, Integer)
           super(message)
         end
 
+        sig { returns(T::Hash[T.untyped, T.untyped]) }
         def to_jsonrpc_error
           data = {
             "httpStatus" => HTTP_STATUS_PAYMENT_REQUIRED,
@@ -55,14 +78,22 @@ module Mpp
       end
 
       class MalformedCredentialError < StandardError
-        attr_reader :detail, :code
+        extend T::Sig
 
+        sig { returns(T.untyped) }
+        attr_reader :detail
+
+        sig { returns(Integer) }
+        attr_reader :code
+
+        sig { params(detail: T.untyped, message: BasicObject).void }
         def initialize(detail:, message: "Invalid params")
-          @detail = detail
-          @code = CODE_MALFORMED_CREDENTIAL
+          @detail = T.let(detail, T.untyped)
+          @code = T.let(CODE_MALFORMED_CREDENTIAL, Integer)
           super(message)
         end
 
+        sig { returns(T::Hash[T.untyped, T.untyped]) }
         def to_jsonrpc_error
           {
             "code" => CODE_MALFORMED_CREDENTIAL,

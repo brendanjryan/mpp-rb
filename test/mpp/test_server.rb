@@ -39,7 +39,7 @@ class TestServerVerify < Minitest::Test
     result = Mpp::Server::Verify.verify_or_challenge(
       authorization: nil,
       intent: @intent,
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       realm: REALM,
       secret_key: SECRET
     )
@@ -53,7 +53,7 @@ class TestServerVerify < Minitest::Test
     result = Mpp::Server::Verify.verify_or_challenge(
       authorization: "Bearer token123",
       intent: @intent,
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       realm: REALM,
       secret_key: SECRET
     )
@@ -65,7 +65,7 @@ class TestServerVerify < Minitest::Test
     result = Mpp::Server::Verify.verify_or_challenge(
       authorization: "Payment invalidbase64!!!",
       intent: @intent,
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       realm: REALM,
       secret_key: SECRET
     )
@@ -74,7 +74,7 @@ class TestServerVerify < Minitest::Test
   end
 
   def test_successful_verification
-    request = { "amount" => "1000000" }
+    request = {"amount" => "1000000"}
     challenge = Mpp::Challenge.create(
       secret_key: SECRET,
       realm: REALM,
@@ -86,7 +86,7 @@ class TestServerVerify < Minitest::Test
     echo = challenge.to_echo
     credential = Mpp::Credential.new(
       challenge: echo,
-      payload: { "type" => "transaction", "signature" => "0xabc" },
+      payload: {"type" => "transaction", "signature" => "0xabc"},
       source: "did:pkh:eip155:4217:0x1234"
     )
     auth_header = credential.to_authorization
@@ -109,7 +109,7 @@ class TestServerVerify < Minitest::Test
   end
 
   def test_rejects_wrong_secret
-    request = { "amount" => "1000000" }
+    request = {"amount" => "1000000"}
     challenge = Mpp::Challenge.create(
       secret_key: "different-secret",
       realm: REALM,
@@ -119,7 +119,7 @@ class TestServerVerify < Minitest::Test
       expires: Mpp::Expires.minutes(5)
     )
     echo = challenge.to_echo
-    credential = Mpp::Credential.new(challenge: echo, payload: { "type" => "hash", "hash" => "0x123" })
+    credential = Mpp::Credential.new(challenge: echo, payload: {"type" => "hash", "hash" => "0x123"})
     auth_header = credential.to_authorization
 
     result = Mpp::Server::Verify.verify_or_challenge(
@@ -134,7 +134,7 @@ class TestServerVerify < Minitest::Test
   end
 
   def test_rejects_expired_challenge
-    request = { "amount" => "1000000" }
+    request = {"amount" => "1000000"}
     challenge = Mpp::Challenge.create(
       secret_key: SECRET,
       realm: REALM,
@@ -144,7 +144,7 @@ class TestServerVerify < Minitest::Test
       expires: "2020-01-01T00:00:00.000Z"
     )
     echo = challenge.to_echo
-    credential = Mpp::Credential.new(challenge: echo, payload: { "type" => "hash", "hash" => "0x123" })
+    credential = Mpp::Credential.new(challenge: echo, payload: {"type" => "hash", "hash" => "0x123"})
     auth_header = credential.to_authorization
 
     result = Mpp::Server::Verify.verify_or_challenge(
@@ -159,17 +159,17 @@ class TestServerVerify < Minitest::Test
   end
 
   def test_rejects_mismatched_request
-    request = { "amount" => "1000000" }
+    request = {"amount" => "1000000"}
     challenge = Mpp::Challenge.create(
       secret_key: SECRET,
       realm: REALM,
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "9999999" },
+      request: {"amount" => "9999999"},
       expires: Mpp::Expires.minutes(5)
     )
     echo = challenge.to_echo
-    credential = Mpp::Credential.new(challenge: echo, payload: { "type" => "hash", "hash" => "0x123" })
+    credential = Mpp::Credential.new(challenge: echo, payload: {"type" => "hash", "hash" => "0x123"})
     auth_header = credential.to_authorization
 
     result = Mpp::Server::Verify.verify_or_challenge(
@@ -187,7 +187,7 @@ class TestServerVerify < Minitest::Test
     result = Mpp::Server::Verify.verify_or_challenge(
       authorization: nil,
       intent: @intent,
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       realm: REALM,
       secret_key: SECRET
     )
@@ -200,7 +200,7 @@ class TestServerVerify < Minitest::Test
     result = Mpp::Server::Verify.verify_or_challenge(
       authorization: nil,
       intent: @intent,
-      request: { "amount" => "1.5", "decimals" => 6 },
+      request: {"amount" => "1.5", "decimals" => 6},
       realm: REALM,
       secret_key: SECRET
     )
@@ -215,7 +215,7 @@ class TestMppHandler < Minitest::Test
   def test_charge_returns_challenge_without_auth
     intent = MockIntent.new
     method = MockMethod.new(
-      intents: { "charge" => intent },
+      intents: {"charge" => intent},
       currency: "0x20c0000000000000000000000000000000000000",
       recipient: "0x742d35Cc6634c0532925a3b844bC9e7595F8fE00"
     )
@@ -236,7 +236,7 @@ class TestMppHandler < Minitest::Test
   def test_charge_with_fee_payer
     intent = MockIntent.new
     method = MockMethod.new(
-      intents: { "charge" => intent },
+      intents: {"charge" => intent},
       currency: "0x20c0000000000000000000000000000000000000",
       recipient: "0x742d35Cc6634c0532925a3b844bC9e7595F8fE00"
     )
@@ -269,7 +269,7 @@ class TestMppHandler < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" }
+      request: {"amount" => "1000000"}
     )
     response = Mpp::Server::Decorator.make_challenge_response(challenge, "api.example.com")
 

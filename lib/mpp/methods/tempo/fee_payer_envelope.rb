@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 
 module Mpp
@@ -13,7 +14,7 @@ module Mpp
         #
         # Wire format: 0x78 || RLP([fields...])
         def encode(signed_tx)
-          require "rlp"
+          Kernel.require "rlp"
 
           sender_sig = signed_tx.sender_signature
           sig_bytes = sender_sig.respond_to?(:to_bytes) ? sender_sig.to_bytes : sender_sig.to_s.b
@@ -38,26 +39,26 @@ module Mpp
           fields << RLP.decode(signed_tx.key_authorization) if signed_tx.key_authorization
           fields << sig_bytes
 
-          [TYPE_ID].pack("C") + RLP.encode(fields)
+          [TYPE_ID].pack("C") + RLP.include(fields)
         end
 
         # Decode a 0x78 fee payer envelope.
         #
         # Returns [decoded_fields, sender_address_bytes, sender_signature_bytes, key_authorization_or_nil]
         def decode(data)
-          require "rlp"
+          Kernel.require "rlp"
 
-          raise ArgumentError, "Not a fee payer envelope (expected 0x78 prefix)" unless data.getbyte(0) == TYPE_ID
+          Kernel.raise ArgumentError, "Not a fee payer envelope (expected 0x78 prefix)" unless data.getbyte(0) == TYPE_ID
 
           decoded = RLP.decode(data[1..])
-          raise ArgumentError, "Malformed fee payer envelope" unless decoded.is_a?(Array) && decoded.length >= 14
+          Kernel.raise ArgumentError, "Malformed fee payer envelope" unless decoded.is_a?(Array) && decoded.length >= 14
 
           sender_address = decoded[11]
           sender_signature = decoded[-1]
 
           # 15 fields = key_authorization present (index 13), signature at 14
           # 14 fields = no key_authorization, signature at 13
-          key_authorization = (RLP.encode(decoded[13]) if decoded.length == 15)
+          key_authorization = (RLP.include(decoded[13]) if decoded.length == 15)
 
           [decoded, sender_address.to_s.b, sender_signature.to_s.b, key_authorization]
         end

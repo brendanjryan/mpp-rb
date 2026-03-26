@@ -129,7 +129,7 @@ class TestChallengeId < Minitest::Test
         "amount" => "5000000",
         "currency" => "0x20c0000000000000000000000000000000000000",
         "recipient" => "0x2222222222222222222222222222222222222222",
-        "methodDetails" => { "chainId" => 42_431, "feePayer" => true }
+        "methodDetails" => {"chainId" => 42_431, "feePayer" => true}
       }
     )
 
@@ -143,7 +143,7 @@ class TestGoldenVectors < Minitest::Test
   def test_required_fields_only
     result = Mpp.generate_challenge_id(
       secret_key: SECRET, realm: "api.example.com", method: "tempo", intent: "charge",
-      request: { "amount" => "1000000" }
+      request: {"amount" => "1000000"}
     )
 
     assert_equal "X6v1eo7fJ76gAxqY0xN9Jd__4lUyDDYmriryOM-5FO4", result
@@ -152,7 +152,7 @@ class TestGoldenVectors < Minitest::Test
   def test_golden_with_expires
     result = Mpp.generate_challenge_id(
       secret_key: SECRET, realm: "api.example.com", method: "tempo", intent: "charge",
-      request: { "amount" => "1000000" }, expires: "2025-01-06T12:00:00Z"
+      request: {"amount" => "1000000"}, expires: "2025-01-06T12:00:00Z"
     )
 
     assert_equal "ChPX33RkKSZoSUyZcu8ai4hhkvjZJFkZVnvWs5s0iXI", result
@@ -161,7 +161,7 @@ class TestGoldenVectors < Minitest::Test
   def test_golden_with_digest
     result = Mpp.generate_challenge_id(
       secret_key: SECRET, realm: "api.example.com", method: "tempo", intent: "charge",
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       digest: "sha-256=X48E9qOokqqrvdts8nOJRJN3OWDUoyWxBf7kbu9DBPE"
     )
 
@@ -171,7 +171,7 @@ class TestGoldenVectors < Minitest::Test
   def test_golden_with_expires_and_digest
     result = Mpp.generate_challenge_id(
       secret_key: SECRET, realm: "api.example.com", method: "tempo", intent: "charge",
-      request: { "amount" => "1000000" },
+      request: {"amount" => "1000000"},
       expires: "2025-01-06T12:00:00Z",
       digest: "sha-256=X48E9qOokqqrvdts8nOJRJN3OWDUoyWxBf7kbu9DBPE"
     )
@@ -182,7 +182,7 @@ class TestGoldenVectors < Minitest::Test
   def test_multi_field_request
     result = Mpp.generate_challenge_id(
       secret_key: SECRET, realm: "api.example.com", method: "tempo", intent: "charge",
-      request: { "amount" => "1000000", "currency" => "0x1234", "recipient" => "0xabcd" }
+      request: {"amount" => "1000000", "currency" => "0x1234", "recipient" => "0xabcd"}
     )
 
     assert_equal "_H5TOnnlW0zduQ5OhQ3EyLVze_TqxLDPda2CGZPZxOc", result
@@ -191,7 +191,7 @@ class TestGoldenVectors < Minitest::Test
   def test_nested_method_details
     result = Mpp.generate_challenge_id(
       secret_key: SECRET, realm: "api.example.com", method: "tempo", intent: "charge",
-      request: { "amount" => "1000000", "currency" => "0x1234", "methodDetails" => { "chainId" => 42_431 } }
+      request: {"amount" => "1000000", "currency" => "0x1234", "methodDetails" => {"chainId" => 42_431}}
     )
 
     assert_equal "TqujwpuDDg_zsWGINAd5XObO2rRe6uYufpqvtDmr6N8", result
@@ -209,7 +209,7 @@ class TestGoldenVectors < Minitest::Test
   def test_different_realm
     result = Mpp.generate_challenge_id(
       secret_key: SECRET, realm: "payments.other.com", method: "tempo", intent: "charge",
-      request: { "amount" => "1000000" }
+      request: {"amount" => "1000000"}
     )
 
     assert_equal "3F5bOo2a9RUihdwKk4hGRvBvzQmVPBMDvW0YM-8GD00", result
@@ -218,7 +218,7 @@ class TestGoldenVectors < Minitest::Test
   def test_different_method
     result = Mpp.generate_challenge_id(
       secret_key: SECRET, realm: "api.example.com", method: "stripe", intent: "charge",
-      request: { "amount" => "1000000" }
+      request: {"amount" => "1000000"}
     )
 
     assert_equal "o0ra2sd7HcB4Ph0Vns69gRDUhSj5WNOnUopcDqKPLz4", result
@@ -227,7 +227,7 @@ class TestGoldenVectors < Minitest::Test
   def test_different_intent
     result = Mpp.generate_challenge_id(
       secret_key: SECRET, realm: "api.example.com", method: "tempo", intent: "session",
-      request: { "amount" => "1000000" }
+      request: {"amount" => "1000000"}
     )
 
     assert_equal "aAY7_IEDzsznNYplhOSE8cERQxvjFcT4Lcn-7FHjLVE", result
@@ -297,7 +297,7 @@ class TestChallengeVerify < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" }
+      request: {"amount" => "1000000"}
     )
 
     refute challenge.verify("wrong-secret", "api.example.com")
@@ -309,7 +309,7 @@ class TestChallengeVerify < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" }
+      request: {"amount" => "1000000"}
     )
 
     refute challenge.verify("test-secret-key-12345", "wrong.realm.com")
@@ -321,13 +321,13 @@ class TestChallengeVerify < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" }
+      request: {"amount" => "1000000"}
     )
     tampered = Mpp::Challenge.new(
       id: original.id,
       method: original.method,
       intent: original.intent,
-      request: { "amount" => "9999999" }
+      request: {"amount" => "9999999"}
     )
 
     refute tampered.verify("test-secret-key-12345", "api.example.com")
@@ -341,11 +341,11 @@ class TestOpaque < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" },
-      meta: { "pi" => "pi_3abc123XYZ" }
+      request: {"amount" => "1000000"},
+      meta: {"pi" => "pi_3abc123XYZ"}
     )
 
-    assert_equal({ "pi" => "pi_3abc123XYZ" }, challenge.opaque)
+    assert_equal({"pi" => "pi_3abc123XYZ"}, challenge.opaque)
   end
 
   def test_opaque_is_nil_when_no_meta
@@ -354,7 +354,7 @@ class TestOpaque < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" }
+      request: {"amount" => "1000000"}
     )
 
     assert_nil challenge.opaque
@@ -366,15 +366,15 @@ class TestOpaque < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" },
-      meta: { "pi" => "pi_3abc123XYZ" }
+      request: {"amount" => "1000000"},
+      meta: {"pi" => "pi_3abc123XYZ"}
     )
     without_meta = Mpp::Challenge.create(
       secret_key: "test-secret",
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" }
+      request: {"amount" => "1000000"}
     )
 
     refute_equal with_meta.id, without_meta.id
@@ -386,8 +386,8 @@ class TestOpaque < Minitest::Test
       realm: "api.example.com",
       method: "tempo",
       intent: "charge",
-      request: { "amount" => "1000000" },
-      meta: { "pi" => "pi_3abc123XYZ" }
+      request: {"amount" => "1000000"},
+      meta: {"pi" => "pi_3abc123XYZ"}
     )
 
     assert challenge.verify("my-secret", "api.example.com")

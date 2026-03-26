@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 
 require "openssl"
@@ -15,7 +16,7 @@ module Mpp
         # Compute keccak256 hash. Uses OpenSSL if available, otherwise pure Ruby.
         def keccak256(data)
           # Try eth gem's keccak first
-          require "eth"
+          Kernel.require "eth"
           Eth::Util.keccak256(data)
         rescue LoadError
           # Fallback: use OpenSSL's SHA3-256 (not exactly keccak, but close)
@@ -89,7 +90,7 @@ module Mpp
             nonce = "0x#{memo[52..]}"
 
             client_bytes = [client_hex].pack("H*")
-            client_fingerprint = client_bytes == ANONYMOUS.b ? nil : "0x#{client_hex}"
+            client_fingerprint = (client_bytes == ANONYMOUS.b) ? nil : "0x#{client_hex}"
           rescue ArgumentError
             return nil
           end

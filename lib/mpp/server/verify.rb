@@ -1,3 +1,4 @@
+# typed: strict
 # frozen_string_literal: true
 
 require "time"
@@ -5,6 +6,8 @@ require "time"
 module Mpp
   module Server
     module Verify
+      extend T::Sig
+
       DEFAULT_EXPIRES_MINUTES = 5
 
       module_function
@@ -12,12 +15,13 @@ module Mpp
       # Verify a payment credential or generate a new challenge.
       #
       # Returns Challenge (payment required) or [Credential, Receipt] (verified).
+      sig { params(authorization: T.nilable(String), intent: T.untyped, request: T::Hash[String, T.untyped], realm: String, secret_key: String, method: T.nilable(String), description: T.nilable(String), meta: T.nilable(T::Hash[String, T.untyped]), expires: T.nilable(String)).returns(T.untyped) }
       def verify_or_challenge(authorization:, intent:, request:, realm:, secret_key:,
-                              method: nil, description: nil, meta: nil, expires: nil)
+        method: nil, description: nil, meta: nil, expires: nil)
         method_name = method || "tempo"
         request = Mpp::Units.transform_units(request)
 
-        new_challenge = lambda {
+        new_challenge = Kernel.lambda {
           create_challenge(method_name, intent.name, request, realm, secret_key, description, meta, expires)
         }
 
@@ -35,8 +39,8 @@ module Mpp
         # Stateless challenge verification
         echo = credential.challenge
         begin
-          echo_request = echo.request && !echo.request.empty? ? Mpp::Parsing.b64_decode(echo.request) : {}
-          echo_opaque = echo.opaque && !echo.opaque.empty? ? Mpp::Parsing.b64_decode(echo.opaque) : nil
+          echo_request = echo.request.empty? ? {} : Mpp::Parsing.b64_decode(echo.request)
+          echo_opaque = (echo.opaque && !T.must(echo.opaque).empty?) ? Mpp::Parsing.b64_decode(echo.opaque) : nil
         rescue Mpp::ParseError
           return new_challenge.call
         end
@@ -64,7 +68,7 @@ module Mpp
         # Reject expired challenges as defense-in-depth
         if echo.expires
           begin
-            expires_dt = Time.iso8601(echo.expires.gsub("Z", "+00:00"))
+            expires_dt = Time.iso8601(T.must(echo.expires).gsub("Z", "+00:00"))
             return new_challenge.call if expires_dt < Time.now.utc
           rescue ArgumentError
             # If we can't parse, continue to stricter check below
@@ -80,7 +84,7 @@ module Mpp
         return new_challenge.call unless echo.expires
 
         begin
-          expires_dt = Time.iso8601(echo.expires.gsub("Z", "+00:00"))
+          expires_dt = Time.iso8601(T.must(echo.expires).gsub("Z", "+00:00"))
         rescue ArgumentError
           return new_challenge.call
         end
@@ -90,8 +94,9 @@ module Mpp
         [credential, receipt]
       end
 
+      sig { params(method: String, intent_name: String, request: T::Hash[String, T.untyped], realm: String, secret_key: String, description: T.nilable(String), meta: T.nilable(T::Hash[String, T.untyped]), expires: T.nilable(String)).returns(Mpp::Challenge) }
       def create_challenge(method, intent_name, request, realm, secret_key,
-                           description = nil, meta = nil, expires = nil)
+        description = nil, meta = nil, expires = nil)
         expires = nil if expires && !expires.is_a?(String)
 
         if expires.nil?
@@ -111,6 +116,7 @@ module Mpp
         )
       end
 
+      sig { params(header: String).returns(T.nilable(String)) }
       def extract_payment_scheme(header)
         header.split(",").each do |scheme|
           scheme = scheme.strip
