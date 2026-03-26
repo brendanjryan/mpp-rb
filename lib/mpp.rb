@@ -31,6 +31,7 @@ module Mpp
   # Methods namespace
   module Methods
     autoload :Tempo, "mpp/methods/tempo"
+    autoload :Stripe, "mpp/methods/stripe"
   end
 
   # Extensions namespace
