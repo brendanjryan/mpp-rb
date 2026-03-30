@@ -96,6 +96,9 @@ GEM
     standard-performance (1.9.0)
       lint_roller (~> 1.1)
       rubocop-performance (~> 1.26.0)
+    stripe (19.0.0)
+      bigdecimal
+      logger
     tapioca (0.18.0)
       benchmark
       bundler (>= 2.2.25)
@@ -133,6 +136,7 @@ DEPENDENCIES
   rake (~> 13.0)
   sorbet-static-and-runtime
   standard (~> 1.44)
+  stripe
   tapioca
   webmock (~> 3.24)
 

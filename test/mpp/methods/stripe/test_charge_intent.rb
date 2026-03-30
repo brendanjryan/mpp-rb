@@ -10,6 +10,13 @@ class TestStripeChargeIntent < Minitest::Test
       secret_key: "sk_test_fake",
       api_base: "https://api.stripe.com"
     )
+
+    @stripe_available = begin
+      require "stripe"
+      true
+    rescue LoadError
+      false
+    end
   end
 
   def make_credential(payload:, expires: nil)
@@ -60,23 +67,20 @@ class TestStripeChargeIntent < Minitest::Test
     assert_match(/expired/i, err.message)
   end
 
-  def test_verify_calls_stripe_api
+  def test_verify_calls_stripe_sdk
+    skip "stripe gem not available" unless @stripe_available
+
     credential = make_credential(payload: {"spt" => "spt_test123", "externalId" => "ext_1"})
     request = make_request(method_details: {"metadata" => {"order" => "123"}})
 
-    # Stub Net::HTTP
-    mock_response = Minitest::Mock.new
-    mock_response.expect(:is_a?, true, [Net::HTTPSuccess])
-    mock_response.expect(:body, JSON.generate({
-      "id" => "pi_abc123",
-      "status" => "succeeded"
-    }))
+    mock_result = Struct.new(:id, :status).new("pi_abc123", "succeeded")
+    mock_pi = Minitest::Mock.new
+    mock_pi.expect(:create, mock_result, [Hash])
 
-    mock_http = Minitest::Mock.new
-    mock_http.expect(:use_ssl=, nil, [true])
-    mock_http.expect(:request, mock_response, [Net::HTTP::Post])
+    mock_v1 = Struct.new(:payment_intents).new(mock_pi)
+    mock_client = Struct.new(:v1).new(mock_v1)
 
-    Net::HTTP.stub(:new, mock_http) do
+    ::Stripe::StripeClient.stub(:new, mock_client) do
       receipt = @intent.verify(credential, request)
       assert_equal "success", receipt.status
       assert_equal "pi_abc123", receipt.reference
@@ -84,26 +88,24 @@ class TestStripeChargeIntent < Minitest::Test
       assert_equal "ext_1", receipt.external_id
     end
 
-    mock_http.verify
-    mock_response.verify
+    mock_pi.verify
   end
 
   def test_verify_rejects_failed_payment
+    skip "stripe gem not available" unless @stripe_available
+
     credential = make_credential(payload: {"spt" => "spt_test123"})
     request = make_request
 
-    mock_response = Minitest::Mock.new
-    mock_response.expect(:is_a?, false, [Net::HTTPSuccess])
-    mock_response.expect(:body, JSON.generate({
-      "error" => {"message" => "Card declined"}
-    }))
-    mock_response.expect(:code, "402")
+    error = ::Stripe::StripeError.new("Card declined")
 
-    mock_http = Minitest::Mock.new
-    mock_http.expect(:use_ssl=, nil, [true])
-    mock_http.expect(:request, mock_response, [Net::HTTP::Post])
+    mock_pi = Minitest::Mock.new
+    mock_pi.expect(:create, nil) { raise error }
 
-    Net::HTTP.stub(:new, mock_http) do
+    mock_v1 = Struct.new(:payment_intents).new(mock_pi)
+    mock_client = Struct.new(:v1).new(mock_v1)
+
+    ::Stripe::StripeClient.stub(:new, mock_client) do
       err = assert_raises(Mpp::VerificationError) do
         @intent.verify(credential, request)
       end
@@ -112,21 +114,19 @@ class TestStripeChargeIntent < Minitest::Test
   end
 
   def test_verify_rejects_requires_action
+    skip "stripe gem not available" unless @stripe_available
+
     credential = make_credential(payload: {"spt" => "spt_test123"})
     request = make_request
 
-    mock_response = Minitest::Mock.new
-    mock_response.expect(:is_a?, true, [Net::HTTPSuccess])
-    mock_response.expect(:body, JSON.generate({
-      "id" => "pi_needs3ds",
-      "status" => "requires_action"
-    }))
+    mock_result = Struct.new(:id, :status).new("pi_needs3ds", "requires_action")
+    mock_pi = Minitest::Mock.new
+    mock_pi.expect(:create, mock_result, [Hash])
 
-    mock_http = Minitest::Mock.new
-    mock_http.expect(:use_ssl=, nil, [true])
-    mock_http.expect(:request, mock_response, [Net::HTTP::Post])
+    mock_v1 = Struct.new(:payment_intents).new(mock_pi)
+    mock_client = Struct.new(:v1).new(mock_v1)
 
-    Net::HTTP.stub(:new, mock_http) do
+    ::Stripe::StripeClient.stub(:new, mock_client) do
       assert_raises(Mpp::PaymentActionRequiredError) do
         @intent.verify(credential, request)
       end

@@ -1,16 +1,13 @@
 # typed: false
 # frozen_string_literal: true
 
-require "net/http"
-require "uri"
-require "json"
-require "base64"
 require "time"
 
 module Mpp
   module Methods
     module Stripe
       # Server-side charge intent that verifies payment via Stripe PaymentIntents.
+      # Requires the `stripe` gem.
       class ChargeIntent
         attr_reader :name
 
@@ -38,46 +35,38 @@ module Mpp
 
           # Build PaymentIntent params
           params = {
-            "amount" => request["amount"],
-            "currency" => request["currency"],
-            "shared_payment_granted_token" => spt,
-            "confirm" => "true",
-            "automatic_payment_methods[enabled]" => "true",
-            "automatic_payment_methods[allow_redirects]" => "never"
+            amount: Integer(request["amount"]),
+            currency: request["currency"],
+            shared_payment_granted_token: spt,
+            confirm: true,
+            automatic_payment_methods: {
+              enabled: true,
+              allow_redirects: "never"
+            }
           }
 
           # Include metadata from methodDetails if present
           method_details = request["methodDetails"]
           if method_details.is_a?(Hash) && method_details["metadata"].is_a?(Hash)
-            method_details["metadata"].each do |k, v|
-              params["metadata[#{k}]"] = v.to_s
-            end
+            params[:metadata] = method_details["metadata"].transform_values(&:to_s)
           end
 
-          # POST to Stripe API
-          uri = URI("#{@api_base}/v1/payment_intents")
-          http = Net::HTTP.new(uri.host, uri.port)
-          http.use_ssl = uri.scheme == "https"
-
-          req = Net::HTTP::Post.new(uri.path)
-          req.basic_auth(@secret_key, "")
-          req.set_form_data(params)
-
-          response = http.request(req)
-
-          unless response.is_a?(Net::HTTPSuccess)
-            body = begin
-              JSON.parse(response.body)
-            rescue
-              {}
-            end
-            error_msg = body.dig("error", "message") || "Stripe API error (#{response.code})"
-            raise Mpp::VerificationError, error_msg
+          # Create PaymentIntent via Stripe SDK
+          begin
+            Kernel.require "stripe"
+          rescue LoadError
+            raise "stripe gem is required for Stripe charge verification. Install with: gem install stripe"
           end
 
-          result = JSON.parse(response.body)
-          pi_id = result["id"]
-          status = result["status"]
+          begin
+            client = ::Stripe::StripeClient.new(@secret_key)
+            result = client.v1.payment_intents.create(params)
+          rescue => e
+            raise Mpp::VerificationError, e.message
+          end
+
+          pi_id = result.id
+          status = result.status
 
           if status == "requires_action"
             raise Mpp::PaymentActionRequiredError.new(reason: "PaymentIntent #{pi_id} requires action")

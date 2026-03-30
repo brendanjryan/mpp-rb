@@ -19,3 +19,4 @@ end
 # gem "async-http", "~> 0.75", require: false
 # gem "eth", "~> 0.5", require: false
 # gem "rlp", "~> 0.7", require: false
+gem "stripe", require: false

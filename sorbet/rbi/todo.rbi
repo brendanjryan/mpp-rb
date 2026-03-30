@@ -8,5 +8,9 @@ module Mpp::Methods::Tempo::Account::Eth::Key; end
 module Mpp::Methods::Tempo::Attribution::Eth::Util; end
 module Mpp::Methods::Tempo::ChargeIntent::RLP; end
 module Mpp::Methods::Tempo::FeePayer::RLP; end
+module Mpp::Methods::Tempo::Session::Chain::RLP; end
+module Mpp::Methods::Tempo::Session::Voucher::Eth::Chain::MAINNET; end
+module Mpp::Methods::Tempo::Session::Voucher::Eth::Signature; end
+module Mpp::Methods::Tempo::Session::Voucher::Eth::Util; end
 module Mpp::Methods::Tempo::TempoMethod::Pytempo::Call; end
 module Mpp::Methods::Tempo::TempoMethod::Pytempo::TempoTransaction; end
