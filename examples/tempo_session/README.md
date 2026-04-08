@@ -43,3 +43,5 @@ curl -i -X POST http://localhost:4567/session
 ```
 
 In production, clients use the mppx SDK which handles the challenge-response flow, channel opening, and voucher signing automatically.
+
+`mpp-rb` now includes a Ruby session manager for the same orchestration flow. Voucher signing is built in; open/top-up transaction construction still uses application-supplied callbacks.

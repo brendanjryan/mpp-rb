@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require_relative "defaults"
+require_relative "transaction"
 
 module Mpp
   module Methods
@@ -134,34 +135,20 @@ module Mpp
           rescue
             # fallback to default
           end
-
-          # Build and sign transaction using pytempo equivalent
-          # This requires the pytempo Ruby equivalent - for now, produce a mock
-          # The actual transaction building would use the tempo/pytempo Ruby bindings
-          require "pytempo" # This would be the Ruby equivalent
-
-          tx = Pytempo::TempoTransaction.freeze(
+          Transaction.build_signed_transfer(
+            account: @account,
             chain_id: chain_id,
             gas_limit: gas_limit,
-            max_fee_per_gas: gas_price,
-            max_priority_fee_per_gas: gas_price,
+            gas_price: gas_price,
             nonce: resolved_nonce,
             nonce_key: resolved_nonce_key,
-            fee_token: awaiting_fee_payer ? nil : currency,
-            awaiting_fee_payer: awaiting_fee_payer,
+            currency: currency,
+            transfer_data: transfer_data,
             valid_before: valid_before,
-            calls: [Pytempo::Call.freeze(to: currency, value: 0, data: transfer_data)]
+            awaiting_fee_payer: awaiting_fee_payer
           )
-
-          signed_tx = tx.sign(@account.private_key)
-
-          raw_hex = if awaiting_fee_payer
-            "0x#{FeePayer.encode(signed_tx).unpack1("H*")}"
-          else
-            "0x#{signed_tx.encode.unpack1("H*")}"
-          end
-
-          [raw_hex, chain_id]
+        rescue LoadError => e
+          raise TransactionError, e.message
         end
 
         def encode_transfer(to, amount)

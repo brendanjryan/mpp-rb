@@ -9,6 +9,7 @@ module Mpp
       autoload :Keychain, "mpp/methods/tempo/keychain"
       autoload :Attribution, "mpp/methods/tempo/attribution"
       autoload :Rpc, "mpp/methods/tempo/rpc"
+      autoload :Transaction, "mpp/methods/tempo/transaction"
       autoload :Schemas, "mpp/methods/tempo/schemas"
       autoload :ClientMethod, "mpp/methods/tempo/client_method"
       autoload :TempoMethod, "mpp/methods/tempo/client_method"

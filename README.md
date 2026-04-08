@@ -54,7 +54,7 @@ end
 ```ruby
 require "mpp"
 
-account = Mpp::Methods::Tempo::TempoAccount.from_key("0x...")
+account = Mpp::Methods::Tempo::Account.from_key("0x...")
 
 transport = Mpp::Client::Transport.new(
   methods: [
@@ -68,11 +68,36 @@ transport = Mpp::Client::Transport.new(
 response = transport.request(:get, "https://mpp.dev/api/ping/paid")
 ```
 
+### Session Client
+
+```ruby
+require "mpp"
+
+manager = Mpp::Methods::Tempo::Session.session_manager(
+  account: Mpp::Methods::Tempo::Account.from_key("0x..."),
+  deposit: "1.0",
+  create_open_transaction: ->(**kwargs) { my_open_transaction_builder(**kwargs) },
+)
+
+response = manager.fetch("https://example.com/chat")
+```
+
 ## Examples
 
 | Example | Description |
 |---------|-------------|
-| [charge-server](./examples/charge_server/) | Payment-gated Sinatra API server |
+| [tempo_charge](./examples/tempo_charge/) | Tempo charge server example |
+| [tempo_session](./examples/tempo_session/) | Tempo session server example |
+| [stripe_charge](./examples/stripe_charge/) | Stripe charge server example |
+
+## Support Matrix
+
+| Method | Charge Client | Charge Server | Session Client | Session Server |
+|--------|---------------|---------------|----------------|----------------|
+| Tempo | Yes, implemented in Ruby with `eth` + `rlp` | Yes | Yes, orchestration + voucher signing in Ruby | Yes |
+| Stripe | Yes | Yes | No | No |
+
+Tempo charge transaction construction is implemented directly in Ruby. The Tempo-specific dependencies are the `eth` and `rlp` gems.
 
 ## Protocol
 
