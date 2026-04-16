@@ -116,7 +116,7 @@ module Mpp
             valid_after: nil,
             fee_token: awaiting_fee_payer ? nil : currency,
             sender_signature: nil,
-            fee_payer_signature: awaiting_fee_payer ? EMPTY_SIGNATURE : EMPTY_SIGNATURE,
+            fee_payer_signature: EMPTY_SIGNATURE,
             sender_address: account.address,
             tempo_authorization_list: EMPTY_LIST,
             key_authorization: nil

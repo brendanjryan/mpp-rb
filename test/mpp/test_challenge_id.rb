@@ -17,7 +17,7 @@ class TestChallengeId < Minitest::Test
       }
     )
 
-    assert_equal "XmJ98SdsAdzwP9Oa-8In322Uh6yweMO6rywdomWk_V4", result
+    assert_equal "s0gsoewXwdYI13oPnrtdKTEN4-sIQ-LbQUNV_HttPnA", result
   end
 
   def test_with_expires
@@ -34,7 +34,7 @@ class TestChallengeId < Minitest::Test
       expires: "2026-01-29T12:00:00Z"
     )
 
-    assert_equal "EvqUWMPJjqhoVJVG3mhTYVqCa3Mk7bUVd_OjeJGek1A", result
+    assert_equal "0rMv3trZIudpkJCQxeL2RLQz6uALKTNErWulN07hDLk", result
   end
 
   def test_with_digest
@@ -51,7 +51,7 @@ class TestChallengeId < Minitest::Test
       digest: "sha-256=X48E9qOokqqrvdts8nOJRJN3OWDUoyWxBf7kbu9DBPE="
     )
 
-    assert_equal "qcJUPoapy4bFLznQjQUutwPLyXW7FvALrWA_sMENgAY", result
+    assert_equal "EAX2sqwdeg8Km8LIKRBFhM5xDQvEgIlbTif9FKBsOiU", result
   end
 
   def test_full_challenge
@@ -71,7 +71,7 @@ class TestChallengeId < Minitest::Test
       digest: "sha-256=abc123def456"
     )
 
-    assert_equal "J6w7zq6nHLnchss3AYbLxNirdpuaV8_Msn37DQSz6Bw", result
+    assert_equal "jDq_IazIMny5JJk3-xm3eSxGaP6XbbaApxBi6fG_320", result
   end
 
   def test_different_secret_different_id
@@ -87,7 +87,7 @@ class TestChallengeId < Minitest::Test
       }
     )
 
-    assert_equal "_o55RP0duNvJYtw9PXnf44mGyY5ajV_wwGzoGdTFuNs", result
+    assert_equal "UMEn_1WPt2vz3XK8rrkbHET6RwqfwtK8VVNz0Xc2x4A", result
   end
 
   def test_empty_request
@@ -99,7 +99,7 @@ class TestChallengeId < Minitest::Test
       request: {}
     )
 
-    assert_equal "MYEC2oq3_B3cHa_My1Lx3NQKn_iUiMfsns6361N0SX0", result
+    assert_equal "jUTqTVe3kCv5rVizv1XBCs9qKCLg4AZLwBUnk4N3MR8", result
   end
 
   def test_unicode_in_description
@@ -116,7 +116,7 @@ class TestChallengeId < Minitest::Test
       }
     )
 
-    assert_equal "1_GKJqATKvVnIUY3f8MFq48bMs18JHz_3CBK8pu52yA", result
+    assert_equal "OjiT_PsisJ_SkHEomn9dcfraObt4U3nO5Tg3gU0Etmg", result
   end
 
   def test_nested_method_details
@@ -133,7 +133,7 @@ class TestChallengeId < Minitest::Test
       }
     )
 
-    assert_equal "VkSq83C7vQFvdX3MqHM7s-N1QOo2nae4F1iHmbV5pgg", result
+    assert_equal "9Sl6t74wn9zPaakjTSK6DqhGtS5HQVQEkIUYBYdHTbA", result
   end
 end
 
@@ -146,7 +146,7 @@ class TestGoldenVectors < Minitest::Test
       request: {"amount" => "1000000"}
     )
 
-    assert_equal "X6v1eo7fJ76gAxqY0xN9Jd__4lUyDDYmriryOM-5FO4", result
+    assert_equal "SOfbA51LV3LCkGE7RbomqwXdbWVlrZwlW-Z9aOHolxw", result
   end
 
   def test_golden_with_expires
@@ -155,7 +155,7 @@ class TestGoldenVectors < Minitest::Test
       request: {"amount" => "1000000"}, expires: "2025-01-06T12:00:00Z"
     )
 
-    assert_equal "ChPX33RkKSZoSUyZcu8ai4hhkvjZJFkZVnvWs5s0iXI", result
+    assert_equal "R1ZSIwoIjkFhMCSzUGiCTesiigf5vV65EQ_3gVNtsNw", result
   end
 
   def test_golden_with_digest
@@ -165,7 +165,7 @@ class TestGoldenVectors < Minitest::Test
       digest: "sha-256=X48E9qOokqqrvdts8nOJRJN3OWDUoyWxBf7kbu9DBPE"
     )
 
-    assert_equal "JHB7EFsPVb-xsYCo8LHcOzeX1gfXWVoUSzQsZhKAfKM", result
+    assert_equal "AiMmBdsSOkOYpXTupMnzVnrzZbqMY_P2i80vENRUSN4", result
   end
 
   def test_golden_with_expires_and_digest
@@ -176,7 +176,7 @@ class TestGoldenVectors < Minitest::Test
       digest: "sha-256=X48E9qOokqqrvdts8nOJRJN3OWDUoyWxBf7kbu9DBPE"
     )
 
-    assert_equal "m39jbWWCIfmfJZSwCfvKFFtBl0Qwf9X4nOmDb21peLA", result
+    assert_equal "FMBGqN7MzpKagHsCcartZM09CnUqv7UgmaCy45Ozgug", result
   end
 
   def test_multi_field_request
@@ -185,7 +185,7 @@ class TestGoldenVectors < Minitest::Test
       request: {"amount" => "1000000", "currency" => "0x1234", "recipient" => "0xabcd"}
     )
 
-    assert_equal "_H5TOnnlW0zduQ5OhQ3EyLVze_TqxLDPda2CGZPZxOc", result
+    assert_equal "5CXJi4bWMz2W54WjnlmoxnwTYe-JKwhw0z32ICQ65Es", result
   end
 
   def test_nested_method_details
@@ -194,7 +194,7 @@ class TestGoldenVectors < Minitest::Test
       request: {"amount" => "1000000", "currency" => "0x1234", "methodDetails" => {"chainId" => 42_431}}
     )
 
-    assert_equal "TqujwpuDDg_zsWGINAd5XObO2rRe6uYufpqvtDmr6N8", result
+    assert_equal "eid66xXUZsj46Pb30AfAf7m5kPehgianI16rZ-QY8HU", result
   end
 
   def test_empty_request
@@ -203,7 +203,7 @@ class TestGoldenVectors < Minitest::Test
       request: {}
     )
 
-    assert_equal "yLN7yChAejW9WNmb54HpJIWpdb1WWXeA3_aCx4dxmkU", result
+    assert_equal "6kq-PYTyXtaGAHTHCVUrc_hIsAwLeskeQFtDZerMYhM", result
   end
 
   def test_different_realm
@@ -212,7 +212,7 @@ class TestGoldenVectors < Minitest::Test
       request: {"amount" => "1000000"}
     )
 
-    assert_equal "3F5bOo2a9RUihdwKk4hGRvBvzQmVPBMDvW0YM-8GD00", result
+    assert_equal "-gMjd8UeUvBcqUaUzarVj6ikH_YoDowpaNbEwK1Tmx8", result
   end
 
   def test_different_method
@@ -221,7 +221,7 @@ class TestGoldenVectors < Minitest::Test
       request: {"amount" => "1000000"}
     )
 
-    assert_equal "o0ra2sd7HcB4Ph0Vns69gRDUhSj5WNOnUopcDqKPLz4", result
+    assert_equal "DRH9ycmIlZ2lYUatIHCrxpm9K7ig5pniZ3ulleb7vl0", result
   end
 
   def test_different_intent
@@ -230,7 +230,7 @@ class TestGoldenVectors < Minitest::Test
       request: {"amount" => "1000000"}
     )
 
-    assert_equal "aAY7_IEDzsznNYplhOSE8cERQxvjFcT4Lcn-7FHjLVE", result
+    assert_equal "INeBi93MhinvbwdUxeUUIaT5Q_ufgLKPYZb5Tg43A1o", result
   end
 end
 
@@ -248,7 +248,7 @@ class TestChallengeCreate < Minitest::Test
       }
     )
 
-    assert_equal "XmJ98SdsAdzwP9Oa-8In322Uh6yweMO6rywdomWk_V4", challenge.id
+    assert_equal "s0gsoewXwdYI13oPnrtdKTEN4-sIQ-LbQUNV_HttPnA", challenge.id
     assert_equal "tempo", challenge.method
     assert_equal "charge", challenge.intent
   end
@@ -268,7 +268,7 @@ class TestChallengeCreate < Minitest::Test
       description: "Test payment"
     )
 
-    assert_equal "EvqUWMPJjqhoVJVG3mhTYVqCa3Mk7bUVd_OjeJGek1A", challenge.id
+    assert_equal "0rMv3trZIudpkJCQxeL2RLQz6uALKTNErWulN07hDLk", challenge.id
     assert_equal "2026-01-29T12:00:00Z", challenge.expires
     assert_equal "Test payment", challenge.description
   end
@@ -360,7 +360,7 @@ class TestOpaque < Minitest::Test
     assert_nil challenge.opaque
   end
 
-  def test_opaque_affects_challenge_id
+  def test_opaque_does_not_affect_challenge_id
     with_meta = Mpp::Challenge.create(
       secret_key: "test-secret",
       realm: "api.example.com",
@@ -377,7 +377,7 @@ class TestOpaque < Minitest::Test
       request: {"amount" => "1000000"}
     )
 
-    refute_equal with_meta.id, without_meta.id
+    assert_equal with_meta.id, without_meta.id
   end
 
   def test_verify_succeeds_with_opaque

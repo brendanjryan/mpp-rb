@@ -92,56 +92,6 @@ module Mpp
           expires: expires
         )
       end
-
-      # Handle a session intent.
-      sig { params(authorization: T.nilable(String), amount: String, currency: T.nilable(String), recipient: T.nilable(String), expires: T.nilable(String), description: T.nilable(String), chain_id: T.nilable(Integer), escrow_contract: T.nilable(String), extra: T.nilable(T::Hash[String, String])).returns(T.untyped) }
-      def session(authorization, amount, currency: nil, recipient: nil, expires: nil,
-        description: nil, chain_id: nil, escrow_contract: nil, extra: nil)
-        intent = @method.intents["session"]
-        raise ArgumentError, "Method #{@method.name} does not support session intent" unless intent
-
-        resolved_currency = currency || (@method.respond_to?(:currency) ? @method.currency : nil)
-        resolved_recipient = recipient || (@method.respond_to?(:recipient) ? @method.recipient : nil)
-        raise ArgumentError, "currency must be set on the method or passed to session()" unless resolved_currency
-        raise ArgumentError, "recipient must be set on the method or passed to session()" unless resolved_recipient
-
-        decimals = @method.respond_to?(:decimals) ? @method.decimals : DEFAULT_DECIMALS
-        base_amount = Mpp::Units.parse_units(amount, decimals).to_s
-
-        request = {
-          "amount" => base_amount,
-          "currency" => resolved_currency,
-          "recipient" => resolved_recipient
-        }
-
-        if extra
-          extra.each do |k, v|
-            raise ArgumentError, "extra must be a dict[str, str]" unless k.is_a?(String) && v.is_a?(String)
-          end
-          request["extra"] = extra
-        end
-
-        resolved_chain_id = chain_id
-        resolved_chain_id ||= @method.chain_id if @method.respond_to?(:chain_id)
-
-        method_details = {}
-        method_details["chainId"] = resolved_chain_id unless resolved_chain_id.nil?
-        method_details["escrowContract"] = escrow_contract if escrow_contract
-        request["methodDetails"] = method_details unless method_details.empty?
-
-        request = Mpp::Server::MethodHelper.transform_request(@method, request, nil)
-
-        Verify.verify_or_challenge(
-          authorization: authorization,
-          intent: intent,
-          request: request,
-          realm: @realm,
-          secret_key: @secret_key,
-          method: @method.name,
-          description: description,
-          expires: expires
-        )
-      end
     end
   end
 end

@@ -230,7 +230,12 @@ module Mpp
     # Format a Receipt as a Payment-Receipt header value.
     sig { params(receipt: Mpp::Receipt).returns(String) }
     def format_payment_receipt(receipt)
-      timestamp_str = receipt.timestamp.utc.strftime("%Y-%m-%dT%H:%M:%S.%LZ")
+      t = receipt.timestamp.utc
+      timestamp_str = if t.usec == 0
+        t.strftime("%Y-%m-%dT%H:%M:%SZ")
+      else
+        t.strftime("%Y-%m-%dT%H:%M:%S.%LZ")
+      end
 
       payload = {
         "method" => receipt.method,

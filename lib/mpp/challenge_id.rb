@@ -19,20 +19,13 @@ module Mpp
     request_json = Json.compact_encode(request)
     request_b64 = b64url_encode(request_json)
 
-    opaque_b64 = ""
-    if opaque
-      opaque_json = Json.compact_encode(opaque)
-      opaque_b64 = b64url_encode(opaque_json)
-    end
-
     hmac_input = [
       realm,
       method,
       intent,
       request_b64,
       expires || "",
-      digest || "",
-      opaque_b64
+      digest || ""
     ].join("|")
 
     mac = OpenSSL::HMAC.digest("SHA256", secret_key.encode(Encoding::UTF_8), hmac_input.encode(Encoding::UTF_8))

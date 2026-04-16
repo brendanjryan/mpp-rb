@@ -17,7 +17,6 @@ module Mpp
       autoload :Intents, "mpp/methods/tempo/intents"
       autoload :ChargeIntent, "mpp/methods/tempo/intents"
       autoload :FeePayer, "mpp/methods/tempo/fee_payer_envelope"
-      autoload :Session, "mpp/methods/tempo/session"
     end
   end
 end
