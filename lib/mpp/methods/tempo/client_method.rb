@@ -275,7 +275,7 @@ module Mpp
       #
       # A local fee payer pays gas in `fee_token:` when set, else in the first
       # allowed fee token it holds, independent of the charge currency.
-      def self.tempo(intents:, account: nil, fee_payer: nil, chain_id: nil, rpc_url: nil,
+      def self.tempo(intents:, account: nil, fee_payer: nil, chain_id: Defaults::CHAIN_ID, rpc_url: nil,
         root_account: nil, currency: nil, recipient: nil, decimals: 6, client_id: nil,
         expected_recipients: nil, fee_payer_allowed_fee_tokens: nil, relay: nil,
         on_payment_success: nil, can_offer: nil, currencies: nil, fee_token: nil)
@@ -287,8 +287,15 @@ module Mpp
           fee_payer = account
         end
         fee_payer = FeePayerClient.resolve_optional(fee_payer)
-        if fee_token && FeePayerClient.hosted_config?(fee_payer)
+        if fee_token && (fee_payer.nil? || FeePayerClient.hosted_config?(fee_payer))
           raise ArgumentError, "fee_token can only be configured for a local fee payer"
+        end
+
+        if fee_token && !Defaults::ADDRESS_PATTERN.match?(fee_token)
+          raise ArgumentError, "Invalid Tempo fee token address: #{fee_token.inspect}"
+        end
+        if fee_payer_allowed_fee_tokens&.empty?
+          raise ArgumentError, "fee_payer_allowed_fee_tokens must contain at least one token"
         end
 
         legacy_currency = Defaults.default_currency_for_chain(chain_id)

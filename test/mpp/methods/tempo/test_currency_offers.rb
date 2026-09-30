@@ -27,6 +27,22 @@ class TestTempoCurrencyOffers < Minitest::Test
 
   # Defaults
 
+  def test_minimal_factory_offers_mainnet_currencies
+    method = tempo
+    assert_equal 4217, method.chain_id
+    assert_equal D::RPC_URL, method.rpc_url
+    offers = handler_for(method).charge(nil, "1.00").challenges
+    assert_equal [OUSD, USDC], offers.map { |offer| offer.request["currency"] }
+  end
+
+  def test_fee_token_configuration_requires_local_payer
+    [nil, "https://sponsor.example.test"].each do |payer|
+      assert_raises(ArgumentError) { tempo(fee_payer: payer, fee_token: USDC) }
+    end
+    assert_raises(ArgumentError) { tempo(fee_payer_allowed_fee_tokens: []) }
+    assert_raises(ArgumentError) { tempo(fee_payer: fee_payer_account, fee_token: "invalid") }
+  end
+
   def test_ousd_address
     assert_equal OUSD, D::OUSD
   end
@@ -136,8 +152,8 @@ class TestTempoCurrencyOffers < Minitest::Test
     assert_equal [OUSD, PATH_USD], method.currencies
   end
 
-  def test_factory_without_chain_keeps_legacy_single_default
-    method = tempo
+  def test_factory_explicit_nil_chain_keeps_legacy_single_default
+    method = tempo(chain_id: nil)
 
     assert_equal [PATH_USD], method.currencies
     assert_equal PATH_USD, method.currency
@@ -183,7 +199,7 @@ class TestTempoCurrencyOffers < Minitest::Test
     account = Mpp::Methods::Tempo::Account.from_key("0x#{"11" * 32}")
     {4217 => USDC, 42_431 => PATH_USD, 31_337 => PATH_USD, nil => PATH_USD}.each do |chain_id, expected|
       kwargs = {account: account, intents: {"charge" => StubIntent.new("charge", [])}}
-      kwargs[:chain_id] = chain_id unless chain_id.nil?
+      kwargs[:chain_id] = chain_id
       kwargs[:rpc_url] = "http://localhost:8545" if chain_id == 31_337
 
       assert_equal expected, Mpp::Methods::Tempo.tempo(**kwargs).currency, "chain #{chain_id.inspect}"
@@ -256,7 +272,7 @@ class TestTempoCurrencyOffers < Minitest::Test
   end
 
   def test_unknown_chain_returns_single_legacy_challenge
-    result = handler_for(tempo).charge(nil, "1.00")
+    result = handler_for(tempo(chain_id: nil)).charge(nil, "1.00")
 
     assert_instance_of Mpp::Challenge, result
     assert_equal PATH_USD, result.request["currency"]

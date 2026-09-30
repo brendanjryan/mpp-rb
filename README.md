@@ -56,9 +56,9 @@ end
 ### Accepted currencies
 
 A Tempo server method offers one charge per accepted currency, in order, and
-accepts a credential for any of them. With `chain_id: 4217` (mainnet) the
+accepts a credential for any of them. With the default `chain_id: 4217` (mainnet) the
 defaults are OUSD then USDC.e; with `chain_id: 42431` (Moderato) they are OUSD
-then pathUSD. Other chains, or no `chain_id`, keep the single pathUSD default.
+then pathUSD. Other chains, or an explicit `chain_id: nil`, keep the single pathUSD default.
 Several accepted currencies make `charge` return a `Mpp::Server::ComposedResult`.
 
 ```ruby
