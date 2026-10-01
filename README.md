@@ -343,10 +343,3 @@ Built on the ["Payment" HTTP Authentication Scheme](https://datatracker.ietf.org
 ## License
 
 MIT
-
-### Unsupported payment challenges
-
-The automatic client raises `Mpp::PaymentMethodUnsupportedError` and emits
-`payment.failed` when the initial 402 contains valid Payment challenges but no
-registered method can handle them. A 402 without a valid Payment challenge is
-returned unchanged, as is an unsuccessful response after submitting a credential.
