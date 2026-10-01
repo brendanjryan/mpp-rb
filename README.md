@@ -343,3 +343,18 @@ Built on the ["Payment" HTTP Authentication Scheme](https://datatracker.ietf.org
 ## License
 
 MIT
+
+### Client payment preferences
+
+The automatic client advertises `Accept-Payment` from each method's `intents`
+keys and selects a challenge matching both the method and intent. Methods with
+no declared intents retain charge-only compatibility. Equal-quality offers keep
+server order. Override preferences per request; `q=0` excludes an offer even
+when a broader wildcard accepts it. Malformed explicit preferences raise
+`ArgumentError` before sending the request.
+
+```ruby
+response = transport.get(url, headers: {
+  "Accept-Payment" => "tempo/charge;q=1, */*;q=0"
+})
+```
