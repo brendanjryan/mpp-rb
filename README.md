@@ -343,3 +343,14 @@ Built on the ["Payment" HTTP Authentication Scheme](https://datatracker.ietf.org
 ## License
 
 MIT
+
+### Zero-dollar Tempo charges
+
+The automatic client signs an EIP-712 proof for a zero-amount Tempo charge,
+without building or broadcasting a transaction. The challenge or method must
+specify a chain ID. Positive amounts continue to use transaction credentials.
+
+```ruby
+credential = tempo.create_credential(zero_amount_challenge)
+credential.payload["type"] # => "proof"
+```
